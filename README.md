@@ -28,7 +28,7 @@
 </p>
 
 # DiscordJS V14 ModMail Bot - Introduction:
-A Discord bot project made with the npm package discord.js version 14 and it's job to manage ModMails on a server, and this project includes only one Database: Quick.db. **Project made with ❤ by T.F.A#7524.**<br>
+A Discord bot project made with the npm package discord.js version 14 and it's job to manage mails on a server, and this project includes only one Database: Quick.db. **Project made with ❤ by T.F.A#7524.**<br>
 You can click on the star (⭐️) button above this repository if you liked this project! Thank you all. 🙏
 
 # How to setup:
