@@ -1,12 +1,12 @@
 module.exports = {
   Client: {
     TOKEN: "",
-    ID: "989650107009990698"
+    ID: ""
   },
 
   Handler: {
-    GUILD_ID: "949620901291368458",
-    CATEGORY_ID: "999994847047987250"
+    GUILD_ID: "",
+    CATEGORY_ID: ""
   },
 
   Modmail: {
