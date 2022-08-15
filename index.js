@@ -2,7 +2,7 @@ const { QuickDB } = require('quick.db');
 const colors = require('colors');
 const ms = require('ms');
 const db = new QuickDB();
-const config = require("./config.json");
+const config = require("./config.js");
 const {
   Client,
   GatewayIntentBits,
