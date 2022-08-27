@@ -69,7 +69,7 @@ const asciiText = `
 ██║╚██╔╝██║██║░░██║██║░░██║██║╚██╔╝██║██╔══██║██║██║░░░░░
 ██║░╚═╝░██║╚█████╔╝██████╔╝██║░╚═╝░██║██║░░██║██║███████╗
 ╚═╝░░░░░╚═╝░╚════╝░╚═════╝░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝╚══════╝
-Version 6.0.0 BETA By T.F.A#7524.
+Version 5.0.0 By T.F.A#7524.
 `.underline.red;
 
 console.log(asciiText);
@@ -356,6 +356,20 @@ client.on('interactionCreate', async (interaction) => {
 
     // If command is "Setup":
   } else if (command === "setup") {
+    if (!interaction.member.permissions.has(
+      PermissionsBitField.resolve(config.Modmail.INTERACTION_COMMAND_PERMISSIONS || []))
+    ) return interaction.reply(
+      {
+        embeds: [
+          new EmbedBuilder()
+            .setTitle('Missing Permissions:')
+            .setDescription(`Sorry, I can't let you to use this command because you need ${bold(config.Modmail.INTERACTION_COMMAND_PERMISSIONS.join(', '))} permissions!`)
+            .setColor('Red')
+        ],
+        ephemeral: true
+      }
+    );
+
     const guild = client.guilds.cache.get(config.Handler.GUILD_ID);
     const category = guild.channels.cache.find(CAT => CAT.id === config.Handler.CATEGORY_ID || CAT.name === "ModMail");
 
@@ -388,7 +402,7 @@ client.on('interactionCreate', async (interaction) => {
           ],
           ephemeral: true
         }
-      );
+      ).catch(() => { });
 
       const collectorREPLACE_CHANNEL = interaction.channel.createMessageComponentCollector({
         time: 10000
@@ -764,7 +778,7 @@ client.on('messageCreate', async (message) => {
                     )
                 ]
               }
-            );
+            ).catch(() => { });;
 
             setTimeout(async () => {
               await interaction.channel.delete()
@@ -850,3 +864,4 @@ client.on('messageCreate', async (message) => {
 * Please DO NOT remove these lines, these are the credits to the developer.
 * Sharing this project without giving credits to me (T.F.A) ends in a Copyright warning. (©)
 */
+
