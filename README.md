@@ -83,20 +83,13 @@ module.exports = {
 
 # Usage:
 ### - How to ban/unban someone from using ModMail:
-#### Ban a user:
-Go to any text channel and press on your keyboard the slash key (`/`). You have to see your bot in the list that is going to show you. Click on your bot profile and select the `/ban` command. These commands are called **Slash commands**. Here's a picture below:<br>
-<img src="https://media.discordapp.net/attachments/1006491186875338823/1008817730683687033/2022-08-15_20_20_39-pics.png">
-
-The usage for the command is: `/ban [user] (reason)`.
-
-#### Unban a user:
-Do the same thing like the ban command, but use the command `/unban`. The usage for the command is: `/unban [user]`.
+#### Ban a user: `/ban [user] (reason)` - Unban a user: `/unban [user]`.
 
 ### - ModMail system:
 #### Create a mail:
 Go to your server members list (Located at your right screen on Discord), right click on your bot profile and click on `Message`. Type anything in the DM (Direct Message) with your bot, and your bot should respond that a mail has been successfully created. Go back to your server and check the channels in the category of ModMails, click on the created channel and start communicate. You can upload images and videos, it also works!
-#### Delete a mail:
-Do **not** delete a mail channel by right clicking on the mail channel and then on `Delete channel`. Use the slash command `/close` on the mail to close the mail, so the user who created the mail will receive in his DMs that his mail has been successfully closed. The usage of the command is: `/close (reason)`.
+#### Close & Delete a mail:
+Do **not** delete a mail channel by right clicking on the mail channel and then on `Delete channel`. Use the slash command `/close` on the mail to close the mail, or the button `Close`.
 
 # Something doesn't work here...
 There are a lot of issues happens with some users. You can create an issue on this repository and I will respond to your opened issue(s) as fast as possible. I'm always busy, so please wait for me to respond to your issues.
