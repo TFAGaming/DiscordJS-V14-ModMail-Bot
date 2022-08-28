@@ -69,7 +69,7 @@ const asciiText = `
 ██║╚██╔╝██║██║░░██║██║░░██║██║╚██╔╝██║██╔══██║██║██║░░░░░
 ██║░╚═╝░██║╚█████╔╝██████╔╝██║░╚═╝░██║██║░░██║██║███████╗
 ╚═╝░░░░░╚═╝░╚════╝░╚═════╝░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝╚══════╝
-Version 5.0.0 By T.F.A#7524.
+Version 6.0.0 By T.F.A#7524.
 `.underline.red;
 
 console.log(asciiText);
@@ -201,7 +201,7 @@ client.on('interactionCreate', async (interaction) => {
       {
         content: `${client.ws.ping} ms!`
       }
-    );
+    ).catch(() => { });
     // If command is "Ban":
   } else if (command === "ban") {
     const user = interaction.options.get('user').value;
@@ -326,7 +326,20 @@ client.on('interactionCreate', async (interaction) => {
     if (interaction.channel.parentId === category.id) {
       const requestedUserMail = guild.members.cache.get(interaction.channel.name);
 
-      await interaction.channel.delete().catch(console.log);
+      interaction.reply(
+        {
+          embeds: [
+            new EmbedBuilder()
+              .setDescription('Done, this mail is going to be deleted soon!')
+              .setColor('Green')
+          ],
+          ephemeral: true
+        }
+      ).catch(() => { });
+
+      setTimeout(async () => {
+        await interaction.channel.delete().catch(console.log);
+      }, 3000);
 
       requestedUserMail.send(
         {
@@ -379,7 +392,7 @@ client.on('interactionCreate', async (interaction) => {
         {
           embeds: [
             new EmbedBuilder()
-              .setDescription('There is **already** a modmail category created. Replace the old channel to a new channel?')
+              .setDescription('There is already a modmail category named "ModMail". Replace the old category by a new category?\n\n:warning: If you click on **Replace**, all the mails text channels will be outside of category.')
               .setColor('Red')
               .setFooter(
                 {
@@ -412,6 +425,31 @@ client.on('interactionCreate', async (interaction) => {
         const ID = i.customId;
 
         if (ID == "replace_button_channel_yes") {
+          i.update(
+            {
+              embeds: [
+                new EmbedBuilder()
+                  .setDescription('Creating a new category... This may take a while!')
+                  .setColor('Yellow')
+              ],
+              components: [
+                new ActionRowBuilder()
+                  .addComponents(
+                    new ButtonBuilder()
+                      .setCustomId('replace_button_channel_yes')
+                      .setLabel('Replace')
+                      .setStyle(ButtonStyle.Success)
+                      .setDisabled(true),
+                    new ButtonBuilder()
+                      .setCustomId('replace_button_channel_no')
+                      .setLabel('No')
+                      .setStyle(ButtonStyle.Danger)
+                      .setDisabled(true),
+                  )
+              ]
+            }
+          ).catch(() => { });
+
           await category.delete()
             .catch(() => { });
 
@@ -445,17 +483,32 @@ client.on('interactionCreate', async (interaction) => {
             roles.push("No roles were added to config.js file");
           }
 
-          return i.update(
+          return interaction.editReply(
             {
               embeds: [
                 new EmbedBuilder()
-                  .setDescription(`Done, successfully created a mail channel named **ModMail**.`)
+                  .setDescription(`Done, successfully created a mail category named **ModMail**.`)
                   .addFields(
                     { name: "Roles", value: roles.join(', ') + "." }
                   )
                   .setFooter(
                     {
                       text: "WARN: Please check the roles in the category channel, errors could happen in anytime."
+                    }
+                  )
+                  .setColor('Green')
+              ]
+            }
+          ).catch(() => { });
+        } else if (ID == "replace_button_channel_no") {
+          return i.update(
+            {
+              embeds: [
+                new EmbedBuilder()
+                  .setDescription(`Cancelled.`)
+                  .setFooter(
+                    {
+                      text: "You can now click on \"Dismiss message\" below this embed message."
                     }
                   )
                   .setColor('Green')
@@ -476,37 +529,22 @@ client.on('interactionCreate', async (interaction) => {
                   )
               ],
             }
-          )
-        } else if (ID == "replace_button_channel_no") {
-          return i.update(
-            {
-              embeds: [
-                new EmbedBuilder()
-                  .setDescription(`Cancelled.`)
-                  .setColor('Green')
-              ],
-              components: [
-                new ActionRowBuilder()
-                  .addComponents(
-                    new ButtonBuilder()
-                      .setCustomId('replace_button_channel_yes')
-                      .setLabel('Replace')
-                      .setStyle(ButtonStyle.Success)
-                      .setDisabled(true),
-                    new ButtonBuilder()
-                      .setCustomId('replace_button_channel_no')
-                      .setLabel('No')
-                      .setStyle(ButtonStyle.Danger)
-                      .setDisabled(true),
-                  )
-              ],
-            }
-          )
+          ).catch(() => { });
         } else return;
       })
 
       // If category is not found:
     } else {
+      interaction.reply(
+        {
+          embeds: [
+            new EmbedBuilder()
+              .setDescription('Creating a new category... This may take a while!')
+              .setColor('Yellow')
+          ]
+        }
+      ).catch(() => { });
+
       const channel = await guild.channels.create({
         name: "ModMail",
         type: ChannelType.GuildCategory,
@@ -537,11 +575,11 @@ client.on('interactionCreate', async (interaction) => {
         roles.push("No roles were added to config.js file.");
       }
 
-      return interaction.reply(
+      return interaction.editReply(
         {
           embeds: [
             new EmbedBuilder()
-              .setDescription(`Done, successfully created a mail channel named **ModMail**.`)
+              .setDescription(`Done, successfully created a mail category named **ModMail**.`)
               .addFields(
                 { name: "Roles", value: roles.join(', ') + "." }
               )
@@ -550,10 +588,10 @@ client.on('interactionCreate', async (interaction) => {
                   text: "WARN: Please check the roles in the category channel, errors could happen in anytime."
                 }
               )
-
+              .setColor('Green')
           ]
         }
-      )
+      ).catch(() => { });
     }
   } else return;
 });
@@ -648,25 +686,20 @@ client.on('messageCreate', async (message) => {
         name: message.author.id,
         type: ChannelType.GuildText,
         parent: category,
-        /*permissionOverwrites: [
-          {
-            id: guild.roles.everyone,
-            deny: [PermissionFlagsBits.ViewChannel],
-          },
-        ],*/ // <== USE THIS ONLY IF THE CATEGORY DOESN'T HAVE @everyone VIEW CHANNEL PERMISSION IS FALSE.
+        topic: `A Mail channel created by ${message.author.tag} for requesting help, created on ${new Date().toLocaleString()}.`
       }).catch(console.log);
 
       let embed = new EmbedBuilder()
         .setTitle("New Mail Created:")
         .addFields(
-          { name: "User", value: `${message.author.tag} (${message.author.id})` },
+          { name: "User", value: `${message.author.tag} (\`${message.author.id}\`)` },
           { name: "Message", value: `${message.content || italic("(No message was sent, probably a media/embed message was sent, or an error)")}` },
           { name: "Created on", value: `${new Date().toLocaleString()}` },
         )
         .setColor('Blue')
         .setFooter(
           {
-            text: 'Click on \"Close\" button below to close the mail. If it responds with \"Interaction has failed.\", use the slash command /close.'
+            text: 'Click on \"Close\" button below to close the mail. If it responds with \"This interaction failed\", use the slash command /close.'
           }
         )
 
@@ -700,7 +733,7 @@ client.on('messageCreate', async (message) => {
                   )
               ]
             }
-          );
+          ).catch(() => { });
 
           return message.author.send(
             {
@@ -731,7 +764,10 @@ client.on('messageCreate', async (message) => {
               )
           ]
         }
-      );
+      ).then(async (sent) => {
+        sent.pin()
+          .catch(() => { });
+      });
 
       client.on('interactionCreate', async (interaction) => {
         if (interaction.isButton()) {
@@ -745,14 +781,15 @@ client.on('messageCreate', async (message) => {
             const REASON_TEXT_INPUT = new TextInputBuilder()
               .setCustomId('modal_close_variable_1')
               .setLabel("Reason of closing the mail.")
-              .setStyle(TextInputStyle.Short);
+              .setStyle(TextInputStyle.Short)
+              .setRequired(false);
 
             const ACTION_ROW = new ActionRowBuilder()
               .addComponents(REASON_TEXT_INPUT);
 
             modal.addComponents(ACTION_ROW);
 
-            await interaction.showModal(modal);
+            await interaction.showModal(modal).catch(() => { });
           }
         };
 
@@ -764,7 +801,7 @@ client.on('messageCreate', async (message) => {
               {
                 embeds: [
                   new EmbedBuilder()
-                    .setDescription('Mail has been closed! Deleting in **5** seconds...')
+                    .setDescription('Mail has been closed! Deleting in **3** seconds...')
                     .setColor('Red')
                     .setFooter(
                       {
@@ -783,7 +820,7 @@ client.on('messageCreate', async (message) => {
             setTimeout(async () => {
               await interaction.channel.delete()
                 .catch(console.log);
-            }, 5000);
+            }, 3000);
 
             const requestedUserMail = guild.members.cache.get(interaction.channel.name);
 
