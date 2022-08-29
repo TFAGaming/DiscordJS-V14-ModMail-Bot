@@ -11,6 +11,7 @@ module.exports = {
 
   Modmail: {
     INTERACTION_COMMAND_PERMISSIONS: ['Administrator'], // The permissions for the slash commands that admins/server managers can access only. [REQUIRED]
-    MAIL_MANAGER_ROLES: [''] // The roles for the category where moderators can manage mails.
+    MAIL_MANAGER_ROLES: [''], // The roles for the category where moderators can manage mails.
+    MENTION_MANAGER_ROLES_WHEN_NEW_MAIL_CREATED: false // If this is "true": When a mail created, all the MANAGER_ROLES will be pinged. Else, if "false": It doesn't ping the roles.
   }
 };
