@@ -3,6 +3,7 @@ const colors = require('colors');
 const ms = require('ms');
 const db = new QuickDB();
 const config = require("./config.js");
+const projectVersion = require('./package.json').version || "Unknown";
 const {
   Client,
   GatewayIntentBits,
@@ -52,7 +53,8 @@ const client = new Client(
         type: 1,
         url: "https://twitch.tv/discord"
       }]
-    }
+    },
+    shards: "auto"
   }
 );
 
@@ -107,6 +109,16 @@ const commands = [
   {
     name: 'ping',
     description: 'Replies with Pong!',
+  },
+
+  {
+    name: 'help',
+    description: 'Replies with the help menu.'
+  },
+
+  {
+    name: 'commands',
+    description: 'Replies with a list of available commands.'
   },
 
   {
@@ -202,6 +214,93 @@ client.on('interactionCreate', async (interaction) => {
         content: `${client.ws.ping} ms!`
       }
     ).catch(() => { });
+
+  } else if (command === "help") {
+
+    return interaction.reply(
+      {
+        embeds: [
+          new EmbedBuilder()
+            .setAuthor(
+              {
+                name: client.user.tag,
+                iconURL: client.user.displayAvatarURL(
+                  {
+                    dynamic: true
+                  }
+                )
+              }
+            )
+            .setTitle("Help Menu:")
+            .setDescription(`This is the help menu of the ${bold("ModMail Bot v" + projectVersion)}.`)
+            .addFields(
+              {
+                name: "Setup the system:",
+                value: "If you haven't provided the category ID in config.js file, use the slash command \`/setup\` instead."
+              },
+              {
+                name: "Creating a new mail:",
+                value: "To create a mail, DM anything to me and a Mail channel should be created automatically with your account ID. You can upload medias, they should work."
+              },
+              {
+                name: "Closing a mail:",
+                value: "If you want to close a Mail from DMs, click on the gray button \"Close\". Else, if you want to close a Mail in Text Channel, go to the Mail channel and click on the red button \"Close\". If it replies with \"This interaction failed\", use the slash command \`/close\` instead."
+              },
+              {
+                name: "Ban/Unban a user from using the ModMail system.",
+                value: "To ban a user, use the slash command \`/ban\`. Else, use the slash command \`/unban\`."
+              },
+              {
+                name: "Am I allowed to share this code?",
+                value: "Unfortunately, you are not allowed to reshare this code from T.F.A 7524. Please DM him and ask the permission to share, else you will get a copyright warning from him. Thanks :)"
+              }
+            )
+            .setColor('Blue')
+            .setFooter(
+              {
+                text: "Developed by: T.F.A#7524"
+              }
+            )
+        ],
+        ephemeral: true
+      }
+    ).catch(() => { });
+
+    // If command is "Commands":
+  } else if (command === "commands") {
+    const totalCommands = [];
+
+    commands.forEach((cmd) => {
+      let arrayOfCommands = new Object();
+
+      arrayOfCommands = {
+        name: "/" + cmd.name,
+        value: cmd.description
+      };
+
+      totalCommands.push(arrayOfCommands);
+    });
+
+    return interaction.reply(
+      {
+        embeds: [
+          new EmbedBuilder()
+            .setAuthor(
+              {
+                name: client.user.tag,
+                iconURL: client.user.displayAvatarURL(
+                  {
+                    dynamic: true
+                  }
+                )
+              }
+            )
+            .setTitle("List of available commands:")
+            .addFields(totalCommands)
+        ]
+      }
+    ).catch(() => { });
+
     // If command is "Ban":
   } else if (command === "ban") {
     const user = interaction.options.get('user').value;
@@ -591,6 +690,7 @@ client.on('interactionCreate', async (interaction) => {
         }
       ).catch(() => { });
     }
+
   } else return;
 });
 
@@ -724,7 +824,7 @@ client.on('messageCreate', async (message) => {
             {
               embeds: [
                 new EmbedBuilder()
-                  .setDescription(`Already closed by a staff member or by you.`)
+                  .setDescription(`${config.Modmail.EMOJIS.WARN} Already closed by a staff member or by you.`)
                   .setColor('Yellow')
               ],
               ephemeral: true
@@ -765,8 +865,18 @@ client.on('messageCreate', async (message) => {
       });
 
       // Collector for the channel where the mail is created.
+      const ROLES_TO_MENTION = [];
+      config.Modmail.MAIL_MANAGER_ROLES.forEach((role) => {
+        if (config.Modmail.MENTION_MANAGER_ROLES_WHEN_NEW_MAIL_CREATED == false) return;
+
+        const ROLE = guild.roles.cache.get(role);
+        if (!ROLE) return;
+        ROLES_TO_MENTION.push(ROLE);
+      });
+
       channel.send(
         {
+          content: config.Modmail.MENTION_MANAGER_ROLES_WHEN_NEW_MAIL_CREATED ? ROLES_TO_MENTION.join(', ') : "** **",
           embeds: [
             embed
           ],
@@ -854,7 +964,7 @@ client.on('messageCreate', async (message) => {
     } else {
       let embed = new EmbedBuilder()
         .setAuthor({ name: `${message.author.tag}`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
-        .setDescription(message.content || italic("(No message was sent, probably a media/embed message was sent, or an error)"))
+        .setDescription(message.content.substr(0, 4096) || italic("(No message was sent, probably a media/embed message was sent, or an error)"))
         .setColor('Green');
 
       if (message.attachments.size) embed.setImage(message.attachments.map(img => img)[0].proxyURL);
@@ -880,7 +990,7 @@ client.on('messageCreate', async (message) => {
 
       let embed = new EmbedBuilder()
         .setAuthor({ name: `${message.author.tag}`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
-        .setDescription(message.content || italic("(No message was sent, probably a media/embed message was sent, or an error)"))
+        .setDescription(message.content.substr(0, 4096) || italic("(No message was sent, probably a media/embed message was sent, or an error)"))
         .setColor('Red');
 
       if (message.attachments.size) embed.setImage(message.attachments.map(img => img)[0].proxyURL);
