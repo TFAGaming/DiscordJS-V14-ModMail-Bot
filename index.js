@@ -328,18 +328,12 @@ client.on('interactionCreate', async (interaction) => {
 
       interaction.reply(
         {
-          embeds: [
-            new EmbedBuilder()
-              .setDescription('Done, this mail is going to be deleted soon!')
-              .setColor('Green')
-          ],
-          ephemeral: true
+          content: "Closing..."
         }
       ).catch(() => { });
 
-      setTimeout(async () => {
-        await interaction.channel.delete().catch(console.log);
-      }, 3000);
+      await interaction.channel.delete()
+        .catch(() => { });
 
       requestedUserMail.send(
         {
@@ -392,7 +386,7 @@ client.on('interactionCreate', async (interaction) => {
         {
           embeds: [
             new EmbedBuilder()
-              .setDescription('There is already a modmail category named "ModMail". Replace the old category by a new category?\n\n:warning: If you click on **Replace**, all the mails text channels will be outside of category.')
+              .setDescription(`There is already a modmail category named "ModMail". Replace the old category by a new category?\n\n:warning: If you click on **Replace**, all the mails text channels will be outside of category.`)
               .setColor('Red')
               .setFooter(
                 {
@@ -429,7 +423,7 @@ client.on('interactionCreate', async (interaction) => {
             {
               embeds: [
                 new EmbedBuilder()
-                  .setDescription('Creating a new category... This may take a while!')
+                  .setDescription(`Creating a new category... This may take a while!`)
                   .setColor('Yellow')
               ],
               components: [
@@ -483,7 +477,7 @@ client.on('interactionCreate', async (interaction) => {
             roles.push("No roles were added to config.js file");
           }
 
-          return interaction.editReply(
+          interaction.editReply(
             {
               embeds: [
                 new EmbedBuilder()
@@ -500,8 +494,10 @@ client.on('interactionCreate', async (interaction) => {
               ]
             }
           ).catch(() => { });
+
+          return collectorREPLACE_CHANNEL.stop();
         } else if (ID == "replace_button_channel_no") {
-          return i.update(
+          i.update(
             {
               embeds: [
                 new EmbedBuilder()
@@ -530,6 +526,8 @@ client.on('interactionCreate', async (interaction) => {
               ],
             }
           ).catch(() => { });
+
+          return collectorREPLACE_CHANNEL.stop();
         } else return;
       })
 
@@ -539,7 +537,7 @@ client.on('interactionCreate', async (interaction) => {
         {
           embeds: [
             new EmbedBuilder()
-              .setDescription('Creating a new category... This may take a while!')
+              .setDescription(`Creating a new category... This may take a while!`)
               .setColor('Yellow')
           ]
         }
@@ -717,8 +715,24 @@ client.on('messageCreate', async (message) => {
         const ID = i.customId;
 
         if (ID == "close_button_created_mail_dm") {
-          await channel.delete()
-            .catch(console.log);
+
+          const channelRECHECK = guild.channels.cache.find(
+            x => x.name === message.author.id && x.parentId === category.id
+          );
+
+          if (!channelRECHECK) return i.reply(
+            {
+              embeds: [
+                new EmbedBuilder()
+                  .setDescription(`${config.Modmail.EMOJIS.WARN} Already closed by a staff member or by you.`)
+                  .setColor('Yellow')
+              ],
+              ephemeral: true
+            }
+          );
+
+          await channelRECHECK.delete()
+            .catch(() => { });
 
           i.update(
             {
@@ -735,16 +749,18 @@ client.on('messageCreate', async (message) => {
             }
           ).catch(() => { });
 
-          return message.author.send(
+          await message.author.send(
             {
               embeds: [
                 new EmbedBuilder()
                   .setTitle('Mail Closed:')
-                  .setDescription('Your mail has been successfully closed by you.')
+                  .setDescription(`Your mail has been successfully closed by you.`)
                   .setColor('Green')
-              ]
+              ],
             }
-          );
+          ).catch(console.log);
+
+          return collectorDM.stop();
         } else return;
       });
 
@@ -789,60 +805,51 @@ client.on('messageCreate', async (message) => {
 
             modal.addComponents(ACTION_ROW);
 
-            await interaction.showModal(modal).catch(() => { });
+            await interaction.showModal(modal)
+              .catch(() => { });
           }
-        };
+        } else return;
+      });
 
+      client.on('interactionCreate', async (interaction) => {
         if (interaction.type === InteractionType.ModalSubmit) {
           const ID = interaction.customId;
 
           if (ID == "modal_close") {
-            interaction.reply(
-              {
-                embeds: [
-                  new EmbedBuilder()
-                    .setDescription('Mail has been closed! Deleting in **3** seconds...')
-                    .setColor('Red')
-                    .setFooter(
-                      {
-                        text: `Executed by: ${interaction.user.tag}`,
-                        iconURL: interaction.user.displayAvatarURL(
-                          {
-                            dynamic: true
-                          }
-                        )
-                      }
-                    )
-                ]
-              }
-            ).catch(() => { });;
-
-            setTimeout(async () => {
-              await interaction.channel.delete()
-                .catch(console.log);
-            }, 3000);
-
             const requestedUserMail = guild.members.cache.get(interaction.channel.name);
 
             let reason = interaction.fields.getTextInputValue('modal_close_variable_1');
             if (!reason) reason = "No reason was provided.";
 
-            requestedUserMail.send(
+            interaction.reply(
               {
-                embeds: [
-                  new EmbedBuilder()
-                    .setTitle('Mail Closed:')
-                    .setDescription(`Your mail has been successfully closed by a staff member.`)
-                    .addFields(
-                      { name: "Reason", value: `${italic(reason)}` }
-                    )
-                    .setColor('Green')
-                ]
+                content: "Closing..."
               }
-            )
+            ).catch(() => { });
+
+            return interaction.channel.delete()
+              .catch(() => { })
+              .then(async (ch) => {
+                if (!ch) return; // THIS IS 101% IMPORTANT. IF YOU REMOVE THIS LINE, THE "Mail Closed" EMBED WILL DUPLICATES IN USERS DMS. (1, and then 2, 3, 4, 5 until Infinity)
+
+                return requestedUserMail.send(
+                  {
+                    embeds: [
+                      new EmbedBuilder()
+                        .setTitle('Mail Closed:')
+                        .setDescription(`Your mail has been successfully closed by a staff member.`)
+                        .addFields(
+                          { name: "Reason", value: `${italic(reason)}` }
+                        )
+                        .setColor('Green')
+                    ]
+                  }
+                );
+              });
+
           }
-        };
-      });
+        } else return;
+      })
 
     } else {
       let embed = new EmbedBuilder()
@@ -901,4 +908,3 @@ client.on('messageCreate', async (message) => {
 * Please DO NOT remove these lines, these are the credits to the developer.
 * Sharing this project without giving credits to me (T.F.A) ends in a Copyright warning. (©)
 */
-
