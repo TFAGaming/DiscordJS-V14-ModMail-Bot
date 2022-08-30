@@ -833,7 +833,7 @@ client.on('messageCreate', async (message) => {
             {
               embeds: [
                 new EmbedBuilder()
-                  .setDescription(`${config.Modmail.EMOJIS.WARN} Already closed by a staff member or by you.`)
+                  .setDescription(`Already closed by a staff member or by you.`)
                   .setColor('Yellow')
               ],
               ephemeral: true
