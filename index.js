@@ -4,6 +4,7 @@ const ms = require('ms');
 const db = new QuickDB();
 const config = require("./config.js");
 const projectVersion = require('./package.json').version || "Unknown";
+// const Enmap = require('enmap');
 const {
   Client,
   GatewayIntentBits,
@@ -71,8 +72,8 @@ const asciiText = `
 ██║╚██╔╝██║██║░░██║██║░░██║██║╚██╔╝██║██╔══██║██║██║░░░░░
 ██║░╚═╝░██║╚█████╔╝██████╔╝██║░╚═╝░██║██║░░██║██║███████╗
 ╚═╝░░░░░╚═╝░╚════╝░╚═════╝░╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝╚══════╝
-Version 6.0.0 By T.F.A#7524.
-`.underline.red;
+`.underline.blue + `Version ${projectVersion} By T.F.A#7524.
+`.underline.cyan;
 
 console.log(asciiText);
 
@@ -95,8 +96,8 @@ if (!config.Handler.GUILD_ID) {
 }
 
 if (!config.Handler.CATEGORY_ID) {
-  console.error("[WARN] You should to provide the modmail category ID!".red);
-  console.error("[WARN] Use the slash command /setup to fix this problem without using the config.js file.".red);
+  console.warn("[WARN] You should to provide the modmail category ID!".red);
+  console.warn("[WARN] Use the slash command /setup to fix this problem without using the config.js file.".red);
 }
 
 if (!config.Modmail.INTERACTION_COMMAND_PERMISSIONS) {
@@ -195,6 +196,13 @@ client.login(AuthentificationToken)
 // Client once it's ready:
 client.once('ready', async () => {
   console.log(`[READY] ${client.user.tag} is up and ready to go.`.brightGreen);
+
+  const guild = client.guilds.cache.get(config.Handler.GUILD_ID);
+
+  if (!guild) {
+    console.error('[CRASH] Guild is Invalid, or probably valid but I\'m not there.'.red);
+    return process.exit();
+  } else return;
 });
 
 // If there is an error, this handlers it.
@@ -694,6 +702,7 @@ client.on('interactionCreate', async (interaction) => {
   } else return;
 });
 
+// ModMail System:
 client.on('messageCreate', async (message) => {
   if (message.author.bot) return;
 
@@ -832,7 +841,21 @@ client.on('messageCreate', async (message) => {
           );
 
           await channelRECHECK.delete()
-            .catch(() => { });
+            .catch(() => { })
+            .then(async (ch) => {
+              if (!ch) return; // THIS IS 101% IMPORTANT. IF YOU REMOVE THIS LINE, THE "Mail Closed" EMBED WILL DUPLICATES IN USERS DMS. (1, and then 2, 3, 4, 5 until Infinity)
+
+              await message.author.send(
+                {
+                  embeds: [
+                    new EmbedBuilder()
+                      .setTitle('Mail Closed:')
+                      .setDescription(`Your mail has been successfully closed by you.`)
+                      .setColor('Green')
+                  ],
+                }
+              ).catch(console.log);
+            })
 
           i.update(
             {
@@ -842,23 +865,12 @@ client.on('messageCreate', async (message) => {
                     new ButtonBuilder()
                       .setCustomId('close_button_created_mail_dm')
                       .setLabel('Close')
-                      .setStyle(ButtonStyle.Success)
+                      .setStyle(ButtonStyle.Secondary)
                       .setDisabled(true),
                   )
               ]
             }
           ).catch(() => { });
-
-          await message.author.send(
-            {
-              embeds: [
-                new EmbedBuilder()
-                  .setTitle('Mail Closed:')
-                  .setDescription(`Your mail has been successfully closed by you.`)
-                  .setColor('Green')
-              ],
-            }
-          ).catch(console.log);
 
           return collectorDM.stop();
         } else return;
@@ -867,6 +879,7 @@ client.on('messageCreate', async (message) => {
       // Collector for the channel where the mail is created.
       const ROLES_TO_MENTION = [];
       config.Modmail.MAIL_MANAGER_ROLES.forEach((role) => {
+        if (!config.Modmail.MAIL_MANAGER_ROLES || !role) return ROLES_TO_MENTION.push('[ERROR: No roles were provided]')
         if (config.Modmail.MENTION_MANAGER_ROLES_WHEN_NEW_MAIL_CREATED == false) return;
 
         const ROLE = guild.roles.cache.get(role);
@@ -905,7 +918,7 @@ client.on('messageCreate', async (message) => {
               .setTitle('Closing Mail:');
 
             const REASON_TEXT_INPUT = new TextInputBuilder()
-              .setCustomId('modal_close_variable_1')
+              .setCustomId('modal_close_variable_reason')
               .setLabel("Reason of closing the mail.")
               .setStyle(TextInputStyle.Short)
               .setRequired(false);
@@ -928,7 +941,7 @@ client.on('messageCreate', async (message) => {
           if (ID == "modal_close") {
             const requestedUserMail = guild.members.cache.get(interaction.channel.name);
 
-            let reason = interaction.fields.getTextInputValue('modal_close_variable_1');
+            let reason = interaction.fields.getTextInputValue('modal_close_variable_reason');
             if (!reason) reason = "No reason was provided.";
 
             interaction.reply(
@@ -969,7 +982,8 @@ client.on('messageCreate', async (message) => {
 
       if (message.attachments.size) embed.setImage(message.attachments.map(img => img)[0].proxyURL);
 
-      message.react("📨").catch(() => { });
+      message.react("📨")
+        .catch(() => { });
 
       channel.send(
         {
@@ -995,7 +1009,8 @@ client.on('messageCreate', async (message) => {
 
       if (message.attachments.size) embed.setImage(message.attachments.map(img => img)[0].proxyURL);
 
-      message.react("📨").catch(() => { });
+      message.react("📨")
+        .catch(() => { });
 
       requestedUserMail.send(
         {
@@ -1004,9 +1019,7 @@ client.on('messageCreate', async (message) => {
           ]
         }
       );
-    } else {
-      return;
-    }
+    } else return;
   }
 });
 
