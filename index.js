@@ -23,7 +23,8 @@ const {
   TextInputStyle,
   InteractionType,
   bold,
-  italic
+  italic,
+  codeBlock
 } = require('discord.js');
 
 // Creating a new client:
@@ -154,18 +155,6 @@ const commands = [
   },
 
   {
-    name: 'close',
-    description: 'Close a created mail.',
-    options: [
-      {
-        name: "reason",
-        description: "The reason for closing the mail.",
-        type: 3 // "STRING" type.
-      }
-    ]
-  },
-
-  {
     name: 'setup',
     description: 'Setup the mail caterogy system.'
   }
@@ -206,8 +195,19 @@ client.once('ready', async () => {
 });
 
 // If there is an error, this handlers it.
-process.on('unhandledRejection', async (err, promise) => {
-  console.warn("[ERROR] An error has occured and been successfully handled: ".red + err, promise);
+process.on('unhandledRejection', (reason, promise) => {
+  console.error("[ANTI-CRASH] An error has occured and been successfully handled: [unhandledRejection]".red);
+  console.error(promise, reason);
+});
+
+process.on("uncaughtException", (err, origin) => {
+  console.error("[ANTI-CRASH] An error has occured and been successfully handled: [uncaughtException]".red);
+  console.error(err, origin);
+});
+
+process.on('uncaughtExceptionMonitor', (err, origin) => {
+  console.error("[ANTI-CRASH] An error has occured and been successfully handled: [uncaughtExceptionMonitor]".red);
+  console.error(err, origin);
 });
 
 client.on('interactionCreate', async (interaction) => {
@@ -404,69 +404,6 @@ client.on('interactionCreate', async (interaction) => {
         ephemeral: true
       }
     );
-
-    // If command is "Close":
-  } else if (command === "close") {
-    let reason = interaction.options.get('reason');
-    let correctReason;
-
-    if (!reason) correctReason = 'No reason was provided.';
-    if (reason) correctReason = reason.value;
-
-    if (!interaction.member.permissions.has(
-      PermissionsBitField.resolve(config.Modmail.INTERACTION_COMMAND_PERMISSIONS || []))
-    ) return interaction.reply(
-      {
-        embeds: [
-          new EmbedBuilder()
-            .setTitle('Missing Permissions:')
-            .setDescription(`Sorry, I can't let you to use this command because you need ${bold(config.Modmail.INTERACTION_COMMAND_PERMISSIONS.join(', '))} permissions!`)
-            .setColor('Red')
-        ],
-        ephemeral: true
-      }
-    );
-
-    const guild = client.guilds.cache.get(config.Handler.GUILD_ID);
-    const category = guild.channels.cache.find(CAT => CAT.id === config.Handler.CATEGORY_ID || CAT.name === "ModMail");
-
-    if (interaction.channel.parentId === category.id) {
-      const requestedUserMail = guild.members.cache.get(interaction.channel.name);
-
-      interaction.reply(
-        {
-          content: "Closing..."
-        }
-      ).catch(() => { });
-
-      await interaction.channel.delete()
-        .catch(() => { });
-
-      requestedUserMail.send(
-        {
-          embeds: [
-            new EmbedBuilder()
-              .setTitle('Mail Closed:')
-              .setDescription(`Your mail has been successfully closed by a staff member.`)
-              .addFields(
-                { name: "Reason", value: `${italic(correctReason)}` }
-              )
-              .setColor('Green')
-          ]
-        }
-      )
-    } else {
-      return interaction.reply(
-        {
-          embeds: [
-            new EmbedBuilder()
-              .setDescription(`Sorry, but you can't use this command here. This command works only in the modmail category channel!`)
-              .setColor('Red')
-          ],
-          ephemeral: true
-        }
-      );
-    }
 
     // If command is "Setup":
   } else if (command === "setup") {
@@ -771,7 +708,7 @@ client.on('messageCreate', async (message) => {
           { name: "Media(s)", value: italic("(Below this message line)") }
         )
       };
-
+      
       message.reply(
         {
           embeds: [
@@ -793,22 +730,17 @@ client.on('messageCreate', async (message) => {
         name: message.author.id,
         type: ChannelType.GuildText,
         parent: category,
-        topic: `A Mail channel created by ${message.author.tag} for requesting help, created on ${new Date().toLocaleString()}.`
+        topic: `A Mail channel created by ${message.author.tag} for requesting help or something else.`
       }).catch(console.log);
 
       let embed = new EmbedBuilder()
         .setTitle("New Mail Created:")
         .addFields(
           { name: "User", value: `${message.author.tag} (\`${message.author.id}\`)` },
-          { name: "Message", value: `${message.content || italic("(No message was sent, probably a media/embed message was sent, or an error)")}` },
+          { name: "Message", value: `${message.content.substr(0, 4096) || italic("(No message was sent, probably a media/embed message was sent, or an error)")}` },
           { name: "Created on", value: `${new Date().toLocaleString()}` },
         )
         .setColor('Blue')
-        .setFooter(
-          {
-            text: 'Click on \"Close\" button below to close the mail. If it responds with \"This interaction failed\", use the slash command /close.'
-          }
-        )
 
       if (message.attachments.size) {
         embed.setImage(message.attachments.map(img => img)[0].proxyURL);
@@ -817,66 +749,6 @@ client.on('messageCreate', async (message) => {
         )
       };
 
-      // Collector for the buttons in DM channel:
-      const collectorDM = message.channel.createMessageComponentCollector({});
-
-      collectorDM.on('collect', async (i) => {
-        const ID = i.customId;
-
-        if (ID == "close_button_created_mail_dm") {
-
-          const channelRECHECK = guild.channels.cache.find(
-            x => x.name === message.author.id && x.parentId === category.id
-          );
-
-          if (!channelRECHECK) return i.reply(
-            {
-              embeds: [
-                new EmbedBuilder()
-                  .setDescription(`Already closed by a staff member or by you.`)
-                  .setColor('Yellow')
-              ],
-              ephemeral: true
-            }
-          );
-
-          await channelRECHECK.delete()
-            .catch(() => { })
-            .then(async (ch) => {
-              if (!ch) return; // THIS IS 101% IMPORTANT. IF YOU REMOVE THIS LINE, THE "Mail Closed" EMBED WILL DUPLICATES IN USERS DMS. (1, and then 2, 3, 4, 5 until Infinity)
-
-              await message.author.send(
-                {
-                  embeds: [
-                    new EmbedBuilder()
-                      .setTitle('Mail Closed:')
-                      .setDescription(`Your mail has been successfully closed by you.`)
-                      .setColor('Green')
-                  ],
-                }
-              ).catch(console.log);
-            })
-
-          i.update(
-            {
-              components: [
-                new ActionRowBuilder()
-                  .addComponents(
-                    new ButtonBuilder()
-                      .setCustomId('close_button_created_mail_dm')
-                      .setLabel('Close')
-                      .setStyle(ButtonStyle.Secondary)
-                      .setDisabled(true),
-                  )
-              ]
-            }
-          ).catch(() => { });
-
-          return collectorDM.stop();
-        } else return;
-      });
-
-      // Collector for the channel where the mail is created.
       const ROLES_TO_MENTION = [];
       config.Modmail.MAIL_MANAGER_ROLES.forEach((role) => {
         if (!config.Modmail.MAIL_MANAGER_ROLES || !role) return ROLES_TO_MENTION.push('[ERROR: No roles were provided]')
@@ -887,7 +759,7 @@ client.on('messageCreate', async (message) => {
         ROLES_TO_MENTION.push(ROLE);
       });
 
-      channel.send(
+      return channel.send(
         {
           content: config.Modmail.MENTION_MANAGER_ROLES_WHEN_NEW_MAIL_CREATED ? ROLES_TO_MENTION.join(', ') : "** **",
           embeds: [
@@ -908,72 +780,6 @@ client.on('messageCreate', async (message) => {
           .catch(() => { });
       });
 
-      client.on('interactionCreate', async (interaction) => {
-        if (interaction.isButton()) {
-          const ID = interaction.customId;
-
-          if (ID == "close_button_created_mail_channel") {
-            const modal = new ModalBuilder()
-              .setCustomId('modal_close')
-              .setTitle('Closing Mail:');
-
-            const REASON_TEXT_INPUT = new TextInputBuilder()
-              .setCustomId('modal_close_variable_reason')
-              .setLabel("Reason of closing the mail.")
-              .setStyle(TextInputStyle.Short)
-              .setRequired(false);
-
-            const ACTION_ROW = new ActionRowBuilder()
-              .addComponents(REASON_TEXT_INPUT);
-
-            modal.addComponents(ACTION_ROW);
-
-            await interaction.showModal(modal)
-              .catch(() => { });
-          }
-        } else return;
-      });
-
-      client.on('interactionCreate', async (interaction) => {
-        if (interaction.type === InteractionType.ModalSubmit) {
-          const ID = interaction.customId;
-
-          if (ID == "modal_close") {
-            const requestedUserMail = guild.members.cache.get(interaction.channel.name);
-
-            let reason = interaction.fields.getTextInputValue('modal_close_variable_reason');
-            if (!reason) reason = "No reason was provided.";
-
-            interaction.reply(
-              {
-                content: "Closing..."
-              }
-            ).catch(() => { });
-
-            return interaction.channel.delete()
-              .catch(() => { })
-              .then(async (ch) => {
-                if (!ch) return; // THIS IS 101% IMPORTANT. IF YOU REMOVE THIS LINE, THE "Mail Closed" EMBED WILL DUPLICATES IN USERS DMS. (1, and then 2, 3, 4, 5 until Infinity)
-
-                return requestedUserMail.send(
-                  {
-                    embeds: [
-                      new EmbedBuilder()
-                        .setTitle('Mail Closed:')
-                        .setDescription(`Your mail has been successfully closed by a staff member.`)
-                        .addFields(
-                          { name: "Reason", value: `${italic(reason)}` }
-                        )
-                        .setColor('Green')
-                    ]
-                  }
-                );
-              });
-
-          }
-        } else return;
-      })
-
     } else {
       let embed = new EmbedBuilder()
         .setAuthor({ name: `${message.author.tag}`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
@@ -985,14 +791,13 @@ client.on('messageCreate', async (message) => {
       message.react("📨")
         .catch(() => { });
 
-      channel.send(
+      return channel.send(
         {
           embeds: [
             embed
           ]
         }
       );
-
     }
 
     // If the message is in the modmail category:
@@ -1012,15 +817,122 @@ client.on('messageCreate', async (message) => {
       message.react("📨")
         .catch(() => { });
 
-      requestedUserMail.send(
+      return requestedUserMail.send(
         {
           embeds: [
             embed
           ]
         }
-      );
+      ).catch(() => { });
     } else return;
   }
+});
+
+// Buttons & Modals Handler:
+client.on('interactionCreate', async (interaction) => {
+
+  // BUTTONS:
+  if (interaction.isButton()) {
+    const ID = interaction.customId;
+
+    // Close Button in Text channels:
+    if (ID == "close_button_created_mail_channel") {
+      const modal = new ModalBuilder()
+        .setCustomId('modal_close')
+        .setTitle('Closing Mail:');
+
+      const REASON_TEXT_INPUT = new TextInputBuilder()
+        .setCustomId('modal_close_variable_reason')
+        .setLabel("Reason of closing the mail.")
+        .setStyle(TextInputStyle.Short)
+        .setRequired(false);
+
+      const ACTION_ROW = new ActionRowBuilder()
+        .addComponents(REASON_TEXT_INPUT);
+
+      modal.addComponents(ACTION_ROW);
+
+      await interaction.showModal(modal)
+        .catch(() => { });
+
+      // Close Button in DMs:
+    } else if (ID == "close_button_created_mail_dm") {
+      const guild = client.guilds.cache.get(config.Handler.GUILD_ID);
+
+      const category = guild.channels.cache.find(CAT => CAT.id === config.Handler.CATEGORY_ID || CAT.name === "ModMail");
+
+      const channelRECHECK = guild.channels.cache.find(
+        x => x.name === interaction.user.id && x.parentId === category.id
+      );
+
+      if (!channelRECHECK) return interaction.reply(
+        {
+          embeds: [
+            new EmbedBuilder()
+              .setDescription(`Already closed by a staff member or by you.`)
+              .setColor('Yellow')
+          ],
+          ephemeral: true
+        }
+      );
+
+      await channelRECHECK.delete()
+        .catch(() => { })
+        .then(async (ch) => {
+          if (!ch) return; // THIS IS 101% IMPORTANT. IF YOU REMOVE THIS LINE, THE "Mail Closed" EMBED WILL DUPLICATES IN USERS DMS. (1, and then 2, 3, 4, 5 until Infinity)
+
+          return interaction.reply(
+            {
+              embeds: [
+                new EmbedBuilder()
+                  .setTitle('Mail Closed:')
+                  .setDescription(`Your mail has been successfully closed.`)
+                  .setColor('Green')
+              ]
+            }
+          ).catch(() => { });
+        });
+    } else return;
+
+    // MODALS:
+  } else if (interaction.type === InteractionType.ModalSubmit) {
+    const ID = interaction.customId;
+
+    if (ID == "modal_close") {
+      const guild = client.guilds.cache.get(config.Handler.GUILD_ID);
+
+      const requestedUserMail = guild.members.cache.get(interaction.channel.name);
+
+      let reason = interaction.fields.getTextInputValue('modal_close_variable_reason');
+      if (!reason) reason = "No reason was provided.";
+
+      interaction.reply(
+        {
+          content: "Closing..."
+        }
+      ).catch(() => { });
+
+      return interaction.channel.delete()
+        .catch(() => { })
+        .then(async (ch) => {
+          if (!ch) return; // THIS IS 101% IMPORTANT. IF YOU REMOVE THIS LINE, THE "Mail Closed" EMBED WILL DUPLICATES IN USERS DMS. (1, and then 2, 3, 4, 5 until Infinity)
+
+          return await requestedUserMail.send(
+            {
+              embeds: [
+                new EmbedBuilder()
+                  .setTitle('Mail Closed:')
+                  .setDescription(`Your mail has been successfully closed.`)
+                  .addFields(
+                    { name: "Reason", value: `${italic(reason)}` }
+                  )
+                  .setColor('Green')
+              ]
+            }
+          ).catch(() => { });
+        });
+    } else return;
+  } else return;
 });
 
 /*
