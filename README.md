@@ -1,5 +1,3 @@
-#### This project is still possible to run on discord.js v14.2.0 or above. I have archived this repository because I will not take care anymore about this project...
-
 <p align="center">
 	<img src="https://media.discordapp.net/attachments/1006491186875338823/1008812120080658493/V14_Handler_3.png?width=960&height=540" height="200" style="float: left; margin: 0px 10px 15px 1px;"/> <a style="font-size: 20px"> <a style="font-size: 30px"><br>
 	<img src="https://img.shields.io/github/v/release/discordjs/discord.js?label=Discord.js Current Version:&logo=npm&style=for-the-badge">
