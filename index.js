@@ -65,7 +65,7 @@ require('http')
   .createServer((req, res) => res.end('Ready.'))
   .listen(3030);
 
-// Cool message logger: (DO NOT REMOVE T.F.A#7524, YOU'VE BEEN WARNED.)
+// Cool message logger:
 const asciiText = `
 ███╗░░░███╗░█████╗░██████╗░███╗░░░███╗░█████╗░██╗██╗░░░░░
 ████╗░████║██╔══██╗██╔══██╗████╗░████║██╔══██╗██║██║░░░░░
