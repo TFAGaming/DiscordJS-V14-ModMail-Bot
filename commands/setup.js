@@ -32,7 +32,7 @@ module.exports = {
                         ];
 
                         if (config.modmail.staffRoles) {
-                            config.modmail.staffRoles.forEach(async (role) => {
+                            config.modmail.staffRoles.forEach((role) => {
                                 const roleFetched = guild.roles.cache.get(role);
                                 if (!roleFetched) return;
 
@@ -88,7 +88,7 @@ module.exports = {
             ];
 
             if (config.modmail.staffRoles) {
-                config.modmail.staffRoles.forEach(async (role) => {
+                config.modmail.staffRoles.forEach((role) => {
                     const roleFetched = guild.roles.cache.get(role);
                     if (!roleFetched) return;
 
