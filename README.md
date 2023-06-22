@@ -57,7 +57,7 @@ Closing the mail (by staff):<br>
 
 Run the following commands:
 
-```coffee
+```
 npm init -y
 npm i discord.js aqify.js tfa-jsonmap colors
 ```
