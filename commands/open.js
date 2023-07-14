@@ -29,7 +29,7 @@ module.exports = {
 
         const category = guild.channels.cache.find((cat) => cat.id === config.modmail.categoryId || cat.name === "ModMail");
 
-        const channel = guild.channels.cache.find((x) => x.name === user.id && x.parentId === category.id);
+        const channel = guild.channels.cache.find((x) => x.id === db.mails.get(user.id) && x.parentId === category.id);
 
         if (channel) {
             await interaction.reply({
@@ -44,11 +44,11 @@ module.exports = {
             return;
         };
 
-        if (db.has(user.id)) {
+        if (db.bans.has(user.id)) {
             await interaction.reply({
                 embeds: [
                     new EmbedBuilder()
-                        .setDescription(`That user is banned from using the modmail with the reason below:\n> ${db.get(message.author.id)}`)
+                        .setDescription(`That user is banned from using the modmail with the reason below:\n> ${db.bans.get(message.author.id)}`)
                         .setColor('Red')
                 ],
                 ephemeral: true
@@ -73,11 +73,14 @@ module.exports = {
         await interaction.deferReply({ ephemeral: true });
 
         const mailchannel = await guild.channels.create({
-            name: user.id,
+            name: user.username,
             type: ChannelType.GuildText,
             parent: category,
             topic: `A Mail channel created by ${interaction.user.tag} to contact with ${user.tag} since ${new Date().toLocaleString()}.`
         }).catch(() => { });
+
+        db.mails.set(user.id, mailchannel.id);
+        db.mailsChannels.set(mailchannel.id, user.id);
 
         await user.send({
             embeds: [

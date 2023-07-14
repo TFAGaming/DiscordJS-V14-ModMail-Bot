@@ -43,7 +43,7 @@ module.exports = {
                             });
                         };
 
-                        const channel = await guild.channels.create({
+                        await guild.channels.create({
                             name: "ModMail",
                             type: ChannelType.GuildCategory,
                             permissionOverwrites: permissions
@@ -99,7 +99,7 @@ module.exports = {
                 });
             };
 
-            const channel = await guild.channels.create({
+            await guild.channels.create({
                 name: "ModMail",
                 type: ChannelType.GuildCategory,
                 permissionOverwrites: permissions

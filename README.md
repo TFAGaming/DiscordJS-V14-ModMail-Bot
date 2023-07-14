@@ -76,6 +76,7 @@ npm i discord.js aqify.js tfa-jsonmap colors
 ## Setup your project on Repl.it:
 This is the `config.js` structure. Rename the `example.config.js` to `config.js`, and then replace each property's value with it's required type (the current value in the codeblock below).
 
+(I made this table for literally new beginners in JavaScript)
 | Type | Value |
 | ---- | ----- |
 | string | `''` or `""` |
@@ -118,7 +119,7 @@ module.exports = {
 # Something doesn't work here...
 You can create an issue on this repository and I will respond to your opened issue(s) as fast as possible. I'm always busy, so please wait for me to respond to your issues.
 
-### **Copyright © TFAGAMING 2022-2023**
+### **Copyright © T.F.A 7524 - Development, 2020-2023**
 
 ### Contact me!
 <a href='https://www.youtube.com/c/TFA7524' target="_blank">

@@ -19,7 +19,7 @@ module.exports = {
 
         const user = interaction.options.getUser('user', true);
 
-        if (!db.has(user.id)) {
+        if (!db.bans.has(user.id)) {
             await interaction.reply({
                 embeds: [
                     new EmbedBuilder()
@@ -32,7 +32,7 @@ module.exports = {
             return;
         };
 
-        db.delete(user.id);
+        db.bans.delete(user.id);
 
         await interaction.reply({
             embeds: [

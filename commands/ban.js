@@ -26,7 +26,7 @@ module.exports = {
 
         const reason = interaction.options.getString('reason') || 'No reason was provided';
 
-        if (db.has(user.id)) {
+        if (db.bans.has(user.id)) {
             await interaction.reply({
                 embeds: [
                     new EmbedBuilder()
@@ -39,7 +39,7 @@ module.exports = {
             return;
         };
 
-        db.set(user.id, reason);
+        db.bans.set(user.id, reason);
 
         await interaction.reply({
             embeds: [

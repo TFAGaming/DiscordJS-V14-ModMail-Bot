@@ -46,7 +46,11 @@ const client = new Client({
     shards: "auto"
 });
 
-const db = new JSONMap('./db.json', { prettier: true });
+const db = {
+    bans: new JSONMap('./JSON/bans.json', { prettier: true }),
+    mails: new JSONMap('./JSON/mails.json', { prettier: true }),
+    mailsChannels: new JSONMap('./JSON/mailsChannels.json', { prettier: true })
+};
 
 module.exports = { db };
 
@@ -146,14 +150,14 @@ client.on('messageCreate', async (message) => {
 
     const category = guild.channels.cache.find((cat) => cat.id === config.modmail.categoryId || cat.name === "ModMail");
 
-    const channel = guild.channels.cache.find((x) => x.name === message.author.id && x.parentId === category.id);
+    const channel = guild.channels.cache.find((x) => x.id === db.mails.get(message.author.id) && x.parentId === category.id);
 
     if (message.channel.type == ChannelType.DM) {
-        if (db.has(message.author.id)) {
+        if (db.bans.has(message.author.id)) {
             await message.reply({
                 embeds: [
                     new EmbedBuilder()
-                        .setDescription(`You are currently banned from using the modmail with the reason below:\n> ${db.get(message.author.id)}`)
+                        .setDescription(`You are currently banned from using the modmail with the reason below:\n> ${db.bans.get(message.author.id)}`)
                         .setColor('Red')
                 ],
                 ephemeral: true
@@ -172,11 +176,14 @@ client.on('messageCreate', async (message) => {
 
         if (!channel) {
             const channel = await guild.channels.create({
-                name: message.author.id,
+                name: message.author.username,
                 type: ChannelType.GuildText,
                 parent: category,
                 topic: `A Mail channel created by ${message.author.tag} since ${new Date().toLocaleString()}.`
             }).catch(() => { });
+
+            db.mails.set(message.author.id, channel.id);
+            db.mailsChannels.set(channel.id, message.author.id);
 
             let embedDM = new EmbedBuilder()
                 .setTitle("Mail created")
@@ -289,7 +296,7 @@ client.on('messageCreate', async (message) => {
         if (!category) return;
         if (message.channel.parentId !== category.id) return;
 
-        const requestedUserMail = guild.members.cache.get(message.channel.name);
+        const requestedUserMail = guild.members.cache.find((x) => x.user.id === db.mailsChannels.get(message.channelId));
 
         let embed = new EmbedBuilder()
             .setAuthor({ name: `${message.author.tag}`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
@@ -297,6 +304,14 @@ client.on('messageCreate', async (message) => {
             .setColor('Blurple');
 
         if (message.attachments.size) embed.setImage(message.attachments.map(img => img)[0].proxyURL);
+
+        if (!requestedUserMail) {
+            await message.reply({
+                content: '⚠️ The author of the mail was not found! You can close this mail.'
+            });
+
+            return;
+        };
 
         await message.react("📨").catch(() => { });
 
@@ -344,7 +359,7 @@ client.on('interactionCreate', async (interaction) => {
             const guild = client.guilds.cache.get(config.modmail.guildId);
             const category = guild.channels.cache.find((cat) => cat.id === config.modmail.categoryId || cat.name === "ModMail");
 
-            const channelRECHECK = guild.channels.cache.find(x => x.name === interaction.user.id && x.parentId === category.id);
+            const channelRECHECK = guild.channels.cache.find(x => x.id === db.mails.get(interaction.user.id) && x.parentId === category.id);
 
             if (!channelRECHECK) {
                 await interaction.reply({
@@ -385,7 +400,7 @@ client.on('interactionCreate', async (interaction) => {
         if (ID == "modal_close") {
             const guild = client.guilds.cache.get(config.modmail.guildId);
 
-            const requestedUserMail = guild.members.cache.get(interaction.channel.name);
+            const requestedUserMail = guild.members.cache.find((x) => x.user.id === db.mailsChannels.get(interaction.channelId));
 
             const reason = interaction.fields.getTextInputValue('modal_close_variable_reason') || "No reason was provided";
 
@@ -397,6 +412,8 @@ client.on('interactionCreate', async (interaction) => {
                 .catch(() => { })
                 .then(async (ch) => {
                     if (!ch) return;
+
+                    if (!requestedUserMail) return;
 
                     await requestedUserMail.send({
                         embeds: [
@@ -410,6 +427,14 @@ client.on('interactionCreate', async (interaction) => {
                 });
         } else return;
     } else return;
+});
+
+client.on('channelDelete', (channel) => {
+    if (channel.parentId === channel.guild.channels.cache.find((cat) => cat.id === config.modmail.categoryId || cat.name === "ModMail")) {
+        const author = db.mailsChannels.get(channel.id);
+        db.mailsChannels.delete(channel.id);
+        db.mails.delete(author);
+    };
 });
 
 /*
