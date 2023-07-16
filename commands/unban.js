@@ -5,12 +5,13 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName('unban')
         .setDescription('Unban a user from using the modmail system.')
-        .addUserOption((o) =>
-            o.setName('user')
+        .addUserOption((option) =>
+            option.setName('user')
                 .setDescription('The user to unban.')
                 .setRequired(true)
         )
         .setDefaultMemberPermissions(PermissionFlagsBits.BanMembers),
+    
     /**
      * @param {Client} client 
      * @param {ChatInputCommandInteraction} interaction 
@@ -30,7 +31,7 @@ module.exports = {
             });
 
             return;
-        };
+        }
 
         db.bans.delete(user.id);
 

@@ -44,7 +44,7 @@ module.exports = {
         await interaction.reply({
             embeds: [
                 new EmbedBuilder()
-                    .setDescription(`That user has been successfully banned.\n> ${(correctReason)}`)
+                    .setDescription(`That user has been successfully banned.\nReason: ${reason}`)
                     .setColor('Green')
             ],
             ephemeral: true
