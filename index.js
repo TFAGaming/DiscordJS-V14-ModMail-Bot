@@ -141,7 +141,7 @@ client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
     const guild = client.guilds.cache.get(config.modmail.guildId);
-
+    await guild.members.fetch();
     if (!guild) {
         console.error('[CRASH] The provided guild is invalid.'.red);
 
