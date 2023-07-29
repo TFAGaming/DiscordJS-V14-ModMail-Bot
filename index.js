@@ -1,4 +1,4 @@
-const { JSONMap } = require('tfa-jsonmap');
+const { JSONSchemaDB } = require('@tfagaming/jsondb');
 const { time, wait } = require('aqify.js');
 const colors = require('colors');
 const config = require("./config.js");
@@ -24,11 +24,7 @@ const { readdirSync } = require('fs');
 
 const client = new Client({
     intents: [
-        GatewayIntentBits.Guilds,
-        GatewayIntentBits.GuildMembers,
-        GatewayIntentBits.GuildMessages,
-        GatewayIntentBits.DirectMessages,
-        GatewayIntentBits.MessageContent
+        Object.keys(GatewayIntentBits)
     ],
     partials: [
         Partials.Message,
@@ -47,9 +43,8 @@ const client = new Client({
 });
 
 const db = {
-    bans: new JSONMap('./JSON/bans.json', { prettier: true }),
-    mails: new JSONMap('./JSON/mails.json', { prettier: true }),
-    mailsChannels: new JSONMap('./JSON/mailsChannels.json', { prettier: true })
+    bans: new JSONSchemaDB('./JSON/bans.json', { autoIncrementId: true, uneditableId: true }),
+    mails: new JSONSchemaDB('./JSON/mails.json', { autoIncrementId: true, uneditableId: true })
 };
 
 module.exports = { db };
@@ -115,6 +110,8 @@ client.once('ready', async () => {
 });
 
 client.on('interactionCreate', (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+
     const command = client.commands.get(interaction.commandName);
 
     if (!command) return;
@@ -127,37 +124,37 @@ client.on('interactionCreate', (interaction) => {
     };
 });
 
-process.on('unhandledRejection', (reason, promise) => {
-    console.error("[ANTI-CRASH] An error has occured and been successfully handled: [unhandledRejection]".red);
-    console.error(promise, reason);
-});
-
-process.on("uncaughtException", (err, origin) => {
-    console.error("[ANTI-CRASH] An error has occured and been successfully handled: [uncaughtException]".red);
-    console.error(err, origin);
-});
-
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
     const guild = client.guilds.cache.get(config.modmail.guildId);
+<<<<<<< HEAD
+=======
     await guild.members.fetch();
     if (!guild) {
         console.error('[CRASH] The provided guild is invalid.'.red);
 
         return process.exit();
     };
+>>>>>>> 228b30ed2adc50b268c49e470f1bcda5aecf6f8d
 
     const category = guild.channels.cache.find((cat) => cat.id === config.modmail.categoryId || cat.name === "ModMail");
 
-    const channel = guild.channels.cache.find((x) => x.id === db.mails.get(message.author.id) && x.parentId === category.id);
+    await guild.members.fetch();
+
+    const channel = guild.channels.cache.find((x) => x.id === db.mails.findOne((v) => v.author === message.author.id)?.channelId && x.parentId === category.id);
 
     if (message.channel.type == ChannelType.DM) {
-        if (db.bans.has(message.author.id)) {
+        const banCheck = db.bans.findOne((v) => v.userId === message.author.id);
+
+        if (banCheck) {
             await message.reply({
                 embeds: [
                     new EmbedBuilder()
-                        .setDescription(`You are currently banned from using the modmail with the reason below:\n> ${db.bans.get(message.author.id)}`)
+                        .setDescription(`You are banned from using the modmail with the reason below:\n> ${banCheck.reason}`)
+                        .setFooter({
+                            text: `Ban ID: ${banCheck.id}`
+                        })
                         .setColor('Red')
                 ],
                 ephemeral: true
@@ -169,7 +166,7 @@ client.on('messageCreate', async (message) => {
         if (!category) return message.reply({
             embeds: [
                 new EmbedBuilder()
-                    .setDescription("The system is not ready yet.")
+                    .setDescription("The system is not ready yet. Please contact the server administrators to fix this problem.")
                     .setColor("Red")
             ]
         });
@@ -179,11 +176,10 @@ client.on('messageCreate', async (message) => {
                 name: message.author.username,
                 type: ChannelType.GuildText,
                 parent: category,
-                topic: `A Mail channel created by ${message.author.tag} since ${new Date().toLocaleString()}.`
+                topic: `A mail channel created by ${message.author.tag}. ${time(Date.now(), 'D')} (${time(Date.now(), 'R')})`
             }).catch(() => { });
 
-            db.mails.set(message.author.id, channel.id);
-            db.mailsChannels.set(channel.id, message.author.id);
+            db.mails.set({ author: message.author.id, channelId: channel.id });
 
             let embedDM = new EmbedBuilder()
                 .setTitle("Mail created")
@@ -216,7 +212,7 @@ client.on('messageCreate', async (message) => {
             let embed = new EmbedBuilder()
                 .setTitle("New mail")
                 .addFields(
-                    { name: "User", value: `${message.author.tag} (\`${message.author.id}\`)` },
+                    { name: "User", value: `${message.author.username} (\`${message.author.id}\`)` },
                     { name: "Message", value: `${message.content.substring(0, 1000) || "[Probably a media/embed message was sent instead of a message]"}` },
                     { name: "Created on", value: `${time(Date.now())} (${time(Date.now(), 'R')})` },
                 )
@@ -267,7 +263,7 @@ client.on('messageCreate', async (message) => {
 
         } else {
             let embed = new EmbedBuilder()
-                .setAuthor({ name: `${message.author.tag}`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
+                .setAuthor({ name: `${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
                 .setDescription(message.content.substring(0, 4000) || null)
                 .setColor('Green');
 
@@ -296,10 +292,10 @@ client.on('messageCreate', async (message) => {
         if (!category) return;
         if (message.channel.parentId !== category.id) return;
 
-        const requestedUserMail = guild.members.cache.find((x) => x.user.id === db.mailsChannels.get(message.channelId));
+        const requestedUserMail = guild.members.cache.find((x) => x.user.id === db.mails.findOne((v) => v.channelId === message.channelId)?.author);
 
         let embed = new EmbedBuilder()
-            .setAuthor({ name: `${message.author.tag}`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
+            .setAuthor({ name: `${message.author.username}`, iconURL: message.author.displayAvatarURL({ dynamic: true }) })
             .setDescription(message.content.substring(0, 4000) || null)
             .setColor('Blurple');
 
@@ -359,7 +355,7 @@ client.on('interactionCreate', async (interaction) => {
             const guild = client.guilds.cache.get(config.modmail.guildId);
             const category = guild.channels.cache.find((cat) => cat.id === config.modmail.categoryId || cat.name === "ModMail");
 
-            const channelRECHECK = guild.channels.cache.find(x => x.id === db.mails.get(interaction.user.id) && x.parentId === category.id);
+            const channelRECHECK = guild.channels.cache.find(x => x.id === db.mails.findOne((v) => v.author === interaction.user.id)?.channelId && x.parentId === category.id);
 
             if (!channelRECHECK) {
                 await interaction.reply({
@@ -384,7 +380,6 @@ client.on('interactionCreate', async (interaction) => {
                             new EmbedBuilder()
                                 .setTitle('Mail closed')
                                 .setDescription(`Your mail has been successfully closed by you.`)
-                                .setFooter({ text: 'Do not send any message in case if you want to create a new mail!' })
                                 .setColor('Green')
                         ],
                     }).catch(() => { });
@@ -400,13 +395,15 @@ client.on('interactionCreate', async (interaction) => {
         if (ID == "modal_close") {
             const guild = client.guilds.cache.get(config.modmail.guildId);
 
-            const requestedUserMail = guild.members.cache.find((x) => x.user.id === db.mailsChannels.get(interaction.channelId));
+            const requestedUserMail = guild.members.cache.find((x) => x.user.id === db.mails.findOne((v) => v.channelId === interaction.channelId)?.author);
 
             const reason = interaction.fields.getTextInputValue('modal_close_variable_reason') || "No reason was provided";
 
             await interaction.deferReply({ ephemeral: true });
 
             await wait(1250);
+
+            db.mails.findOneAndDelete((v) => v.channelId === interaction.channelId);
 
             return interaction.channel.delete()
                 .catch(() => { })
@@ -420,7 +417,6 @@ client.on('interactionCreate', async (interaction) => {
                             new EmbedBuilder()
                                 .setTitle('Mail closed')
                                 .setDescription(`Your mail has been closed by a staff.\n> ${reason}`)
-                                .setFooter({ text: 'Do not send any message in case if you want to create a new mail!' })
                                 .setColor('Blurple')
                         ]
                     }).catch(() => { });
@@ -429,12 +425,30 @@ client.on('interactionCreate', async (interaction) => {
     } else return;
 });
 
-client.on('channelDelete', (channel) => {
-    if (channel.parentId === channel.guild.channels.cache.find((cat) => cat.id === config.modmail.categoryId || cat.name === "ModMail")) {
-        const author = db.mailsChannels.get(channel.id);
-        db.mailsChannels.delete(channel.id);
-        db.mails.delete(author);
+client.on('channelDelete', async (channel) => {
+    if (channel.parentId === channel.guild.channels.cache.find((cat) => cat.id === config.modmail.categoryId || cat.name === "ModMail")?.id) {
+        const author = client.users.cache.get(db.mails.findOne((v) => v.channelId === channel.id)?.author);
+
+        db.mails.findOneAndDelete((v) => v.channelId === channel.id);
+
+        if (author) {
+            await wait(3000); // => We need the embedded message to be sent first.
+
+            await author.send({
+                content: '**Mail Deleted**: Your mail has been deleted, please do not said any message in case you want to create another mail.\nThank you for using our modmail system! - ' + channel.guild.name + ' devs.'
+            });
+        };
     };
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.error("[ANTI-CRASH] An error has occured and been successfully handled: [unhandledRejection]".red);
+    console.error(promise, reason);
+});
+
+process.on("uncaughtException", (err, origin) => {
+    console.error("[ANTI-CRASH] An error has occured and been successfully handled: [uncaughtException]".red);
+    console.error(err, origin);
 });
 
 /*

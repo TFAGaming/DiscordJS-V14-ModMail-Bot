@@ -26,7 +26,9 @@ module.exports = {
 
         const reason = interaction.options.getString('reason') || 'No reason was provided';
 
-        if (db.bans.has(user.id)) {
+        const banCheck = db.bans.findOne((v) => v.userId === user.id);
+
+        if (banCheck) {
             await interaction.reply({
                 embeds: [
                     new EmbedBuilder()
@@ -39,12 +41,12 @@ module.exports = {
             return;
         };
 
-        db.bans.set(user.id, reason);
+        db.bans.set({ userId: user.id, reason: reason });
 
         await interaction.reply({
             embeds: [
                 new EmbedBuilder()
-                    .setDescription(`That user has been successfully banned.\nReason: ${reason}`)
+                    .setDescription(`${user.toString()} has been successfully banned.\nReason: ${reason}`)
                     .setColor('Green')
             ],
             ephemeral: true

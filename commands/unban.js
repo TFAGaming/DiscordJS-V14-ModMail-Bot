@@ -20,7 +20,9 @@ module.exports = {
 
         const user = interaction.options.getUser('user', true);
 
-        if (!db.bans.has(user.id)) {
+        const banCheck = db.bans.findOne((v) => v.userId === user.id);
+
+        if (!banCheck) {
             await interaction.reply({
                 embeds: [
                     new EmbedBuilder()
@@ -33,12 +35,12 @@ module.exports = {
             return;
         }
 
-        db.bans.delete(user.id);
+        db.bans.findOneAndDelete((v) => v.userId === user.id);
 
         await interaction.reply({
             embeds: [
                 new EmbedBuilder()
-                    .setDescription(`That user has been successfully unbanned.`)
+                    .setDescription(`${user.toString()} has been successfully unbanned.`)
                     .setColor('Green')
             ],
             ephemeral: true
