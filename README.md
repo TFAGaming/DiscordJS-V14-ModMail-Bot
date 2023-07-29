@@ -27,6 +27,7 @@ If you find this project useful, please show your support by clicking the star (
 - Simplifies the management of modmail.
 - Robust error handling for a smooth experience.
 
+<!--
 # Preview
 
 Messaging the bot:<br>
@@ -40,6 +41,7 @@ Receiving messages in DMs:<br>
 
 Closing a mail (by staff):<br>
 <img src="https://media.discordapp.net/attachments/1111644651036876822/1121557698824130570/2023-06-22_22_49_26-TypeScript_Bot_-_Discord.png" alt="Closing Mail Preview">
+-->
 
 # Setup
 
@@ -48,7 +50,7 @@ Closing a mail (by staff):<br>
 - [Node.js](https://nodejs.org/en/): version 16.9.0 or above.
 - [discord.js](https://www.npmjs.com/package/discord.js): version 14.11.0 or above.
 - [aqify.js](https://www.npmjs.com/package/aqify.js) (custom package): version 1.8.0 or above.
-- [tfa-jsonmap](https://www.npmjs.com/package/tfa-jsonmap) (custom package): version 1.3.0 or above.
+- [@tfagaming/jsondb](https://www.npmjs.com/package/@tfagaming/jsondb) (custom package): version 1.1.0 or above.
 - [colors](https://www.npmjs.com/package/ms): any version.
 
 To set up the project, follow these steps:
