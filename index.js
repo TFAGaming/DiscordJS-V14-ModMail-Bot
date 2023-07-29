@@ -3,6 +3,7 @@ const { time, wait } = require('aqify.js');
 const colors = require('colors');
 const config = require("./config.js");
 const projectVersion = require('./package.json').version || "v0.0.0";
+const discordTranscripts = require("discord-html-transcripts");
 
 const {
     Client,
@@ -360,7 +361,31 @@ client.on('interactionCreate', async (interaction) => {
             const category = guild.channels.cache.find((cat) => cat.id === config.modmail.categoryId || cat.name === "ModMail");
 
             const channelRECHECK = guild.channels.cache.find(x => x.id === db.mails.get(interaction.user.id) && x.parentId === category.id);
-
+            if (channelRECHECK) {
+              const attachment = await discordTranscripts.createTranscript(
+                channelRECHECK
+              );
+              const logsChannel = guild.channels.cache.find(
+                (logs) =>
+                  logs.id === config.modmail.stafflogs ||
+                  logs.name === "Modmail-logs"
+              );
+              logsChannel.send({
+                embeds: [
+                  new EmbedBuilder()
+                    .setTitle("Modmail closed")
+                    .setDescription(
+                      `Modmail closed for ${channelRECHECK.name} by <@${interaction.user.id}>`
+                    )
+                    .setFooter({
+                      text: `The transcript is already here!`,
+                    })
+                    .setTimestamp()
+                    .setColor("Green"),
+                ],
+                files: [attachment],
+              });
+            }
             if (!channelRECHECK) {
                 await interaction.reply({
                     embeds: [
@@ -407,7 +432,31 @@ client.on('interactionCreate', async (interaction) => {
             await interaction.deferReply({ ephemeral: true });
 
             await wait(1250);
-
+            if (interaction.channel) {
+              const attachment = await discordTranscripts.createTranscript(
+                interaction.channel
+              );
+              const logsChannel = guild.channels.cache.find(
+                (logs) =>
+                  logs.id === config.modmail.stafflogs ||
+                  logs.name === "Modmail-logs"
+              );
+              logsChannel.send({
+                embeds: [
+                  new EmbedBuilder()
+                    .setTitle("Modmail closed")
+                    .setDescription(
+                      `Modmail closed for ${interaction.channel.name} by <@${interaction.user.id}>`
+                    )
+                    .setFooter({
+                      text: `The transcript is already here!`,
+                    })
+                    .setTimestamp()
+                    .setColor("Green"),
+                ],
+                files: [attachment],
+              });
+            }
             return interaction.channel.delete()
                 .catch(() => { })
                 .then(async (ch) => {

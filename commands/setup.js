@@ -48,7 +48,18 @@ module.exports = {
                             type: ChannelType.GuildCategory,
                             permissionOverwrites: permissions
                         }).catch(() => { });
-
+                        const newcat = guild.channels.cache.find(
+                          (cat) =>
+                            cat.id === config.modmail.categoryId ||
+                            cat.name === "Modmail"
+                        );
+                        await guild.channels.create({
+                            name: "ModMail-logs",
+                            type: ChannelType.GuildText,
+                            permissionOverwrites: permissions,
+                            parent: newcat,
+                            topic: `A logs channel for the modmail system.`,
+                          }).catch(() => {});
                         await i.followUp({
                             content: `Successfully created a new category for the modmail system!\n> Roles permissions overwrites: ${config.modmail.staffRoles?.length > 0 ? config.modmail.staffRoles.map((r) => `<@&${r}>`).join(', ') : '[No roles]'}\n> Permissions: **Send Messages**, **View Channel**, **Attach Files**.`,
                             ephemeral: true
@@ -104,7 +115,18 @@ module.exports = {
                 type: ChannelType.GuildCategory,
                 permissionOverwrites: permissions
             }).catch(() => { });
-
+            const newcat = guild.channels.cache.find(
+              (cat) =>
+                cat.id === config.modmail.categoryId || cat.name === "Tickets"
+            );
+            await guild.channels.create({
+                name: "Ticket-logs",
+                type: ChannelType.GuildText,
+                permissionOverwrites: permissions,
+                parent: newcat,
+                topic: `A logs channel for the tickets system.`,
+            }).catch(() => { });
+            
             await interaction.followUp({
                 content: `Successfully created a new category for the modmail system!\n> Roles permissions overwrites: ${config.modmail.staffRoles?.length > 0 ? config.modmail.staffRoles.map((r) => `<@&${r}>`).join(', ') : '[No roles]'}\n> Permissions: **Send Messages**, **View Channel**, **Attach Files**.`,
                 ephemeral: true
