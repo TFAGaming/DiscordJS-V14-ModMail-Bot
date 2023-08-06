@@ -1,7 +1,7 @@
 {
   "name": "discordjs-v14-modmail-bot",
   "version": "7.0.0",
-  "description": "",
+  "description": "<p align=\"center\">\r     <a href=\"https://github.com/TFAGaming/DiscordJS-V14-ModMail-Bot\">\r         <img src=\"https://img.shields.io/github/forks/TFAGaming/DiscordJS-V14-ModMail-Bot?label=Forks&color=lime&logo=githubactions&logoColor=lime\" alt=\"Forks\">\r     </a>\r     <a href=\"https://github.com/TFAGaming/DiscordJS-V14-ModMail-Bot/stargazers\">\r         <img src=\"https://img.shields.io/github/stars/TFAGaming/DiscordJS-V14-ModMail-Bot?label=Stars&color=yellow&logo=reverbnation&logoColor=yellow\" alt=\"Stars\">\r     </a>\r     <a href=\"https://github.com/TFAGaming/DiscordJS-V14-ModMail-Bot/blob/main/LICENSE\">\r         <img src=\"https://img.shields.io/github/license/TFAGaming/DiscordJS-V14-ModMail-Bot?label=License&color=808080&logo=gitbook&logoColor=808080\" alt=\"License\">\r     </a>\r     <a href=\"https://github.com/TFAGaming/DiscordJS-V14-ModMail-Bot/issues\">\r         <img src=\"https://img.shields.io/github/issues/TFAGaming/DiscordJS-V14-ModMail-Bot?label=Issues&color=red&logo=ifixit&logoColor=red\" alt=\"Issues\">\r     </a>\r </p>",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,9 +11,10 @@
   "author": "T.F.A#7524",
   "license": "ISC",
   "dependencies": {
-    "@tfagaming/jsondb": "^1.1.0",
-    "aqify.js": "^2.4.1",
+    "@tfagaming/jsondb": "^1.2.1",
     "colors": "^1.4.0",
-    "discord.js": "^14.11.0"
+    "discord.js": "^14.12.1",
+    "dotenv": "^16.3.1",
+    "horizon-handler": "^1.1.0"
   }
 }

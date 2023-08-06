@@ -1,15 +1,16 @@
-const { SlashCommandBuilder, Client, ChatInputCommandInteraction } = require("discord.js");
+const { SlashCommandBuilder } = require("discord.js");
+const { commandshandler } = require("..");
 
-module.exports = {
-    data: new SlashCommandBuilder()
+module.exports = new commandshandler.command({
+    type: 1,
+    structure: new SlashCommandBuilder()
         .setName('ping')
-        .setDescription('Replies with pong!'),
-    
-    /**
-     * @param {Client} client 
-     * @param {ChatInputCommandInteraction} interaction 
-     */
+        .setDescription('Replies with Pong!'),
     run: async (client, interaction) => {
-        await interaction.reply(`Pong! ${Math.round(client.ws.ping)}ms`);
+
+        await interaction.reply({
+            content: `**Pong**! ${Math.round(client.ws.ping)}ms`
+        });
+
     }
-};
+});

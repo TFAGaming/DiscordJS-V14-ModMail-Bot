@@ -1,3 +1,4 @@
+<!--
 <p align="center">
     <a href="https://github.com/TFAGaming/DiscordJS-V14-ModMail-Bot">
         <img src="https://img.shields.io/github/forks/TFAGaming/DiscordJS-V14-ModMail-Bot?label=Forks&color=lime&logo=githubactions&logoColor=lime" alt="Forks">
@@ -12,12 +13,11 @@
         <img src="https://img.shields.io/github/issues/TFAGaming/DiscordJS-V14-ModMail-Bot?label=Issues&color=red&logo=ifixit&logoColor=red" alt="Issues">
     </a>
 </p>
+-->
 
 # DiscordJS-V14-ModMail-Bot
 
 Welcome to DiscordJS-V14-ModMail-Bot, a Discord bot project developed using the powerful npm package discord.js version 14. This bot is designed to efficiently manage modmail on a server, utilizing a single JSON database for seamless communication.
-
-**Project developed with ❤ by T.F.A#7524.**
 
 If you find this project useful, please show your support by clicking the star (⭐️) button above this repository. Thank you! 🙏
 
@@ -48,9 +48,9 @@ Closing a mail (by staff):<br>
 ## Requirements:
 
 - [Node.js](https://nodejs.org/en/): version 16.9.0 or above.
-- [discord.js](https://www.npmjs.com/package/discord.js): version 14.11.0 or above.
-- [aqify.js](https://www.npmjs.com/package/aqify.js) (custom package): version 1.8.0 or above.
-- [@tfagaming/jsondb](https://www.npmjs.com/package/@tfagaming/jsondb) (custom package): version 1.1.0 or above.
+- [discord.js](https://www.npmjs.com/package/discord.js): version 14.12.0 or above.
+- [horizon-handler](https://www.npmjs.com/package/horizon-handler) (my package): version 1.1.0 or above.
+- [@tfagaming/jsondb](https://www.npmjs.com/package/@tfagaming/jsondb) (my package): version 1.2.1 or above.
 - [colors](https://www.npmjs.com/package/ms): any version.
 
 To set up the project, follow these steps:
@@ -59,6 +59,16 @@ To set up the project, follow these steps:
 2. Install the required packages by running `npm i discord.js aqify.js tfa-jsonmap colors`.
 3. Create a `config.js` file using the provided `example.config.js` as a template.
 4. Fill in the empty values in the `config.js` file with the required information.
+
+> **Warning**
+> If you're using repl.it, use `process.env.CLIENT_TOKEN` as your bot token in `config.js`, and then create a new key in **Secrets** named **CLIENT_TOKEN** with the value of your bot token.
+> ```ts
+> client: {
+>     token: process.env.CLIENT_TOKEN,
+>     id: ...
+> }, ...
+> ```
+
 5. Obtain your bot token from the [Discord Developer Portal](https://discord.com/developers) and add it to the `config.js` file.
 6. Configure the necessary settings for your bot, such as the guild ID, category ID for modmail, staff roles, and whether to mention staff roles for new mail notifications.
 7. Start the bot by running `node index.js`, `node .`, or `npm run start` in your terminal.
@@ -85,19 +95,12 @@ To run the project on Visual Studio Code, follow these additional steps:
 
 file. 4. Open the terminal in Visual Studio Code and run `node index.js`, `node .`, or `npm run start`. 5. Enjoy! =)
 
-# Need Assistance?
+## Need Assistance?
 
 If you encounter any issues or have questions about this project, please create an issue on this repository. I will respond to your inquiries as quickly as possible. Your feedback is valuable and helps improve the project.
 
-### **Copyright © T.F.A 7524 - Development, 2020-2023**
+## Contributors
+<img src="https://contrib.rocks/image?repo=TFAGaming/DiscordJS-V14-ModMail-Bot">
 
-### Connect with me!
-
-<a href='https://www.youtube.com/c/TFA7524' target="_blank">
-    <img alt='YouTube' src='https://img.shields.io/badge/YouTube-100000?style=social&logo=YouTube&logoColor=FF0000&labelColor=000000&color=EAE9E9'/>
-</a>
-<a href='https://dsc.gg/codingdevelopment' target="_blank">
-    <img alt='Discord' src='https://img.shields.io/badge/Discord-100000?style=social&logo=Discord&logoColor=5865F2&labelColor=000000&color=EAE9E9'/>
-</a>
-
-Please feel free to customize the wording as per your preferences.
+## License
+MIT
