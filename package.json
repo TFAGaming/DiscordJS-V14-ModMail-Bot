@@ -15,6 +15,6 @@
     "colors": "^1.4.0",
     "discord.js": "^14.12.1",
     "dotenv": "^16.3.1",
-    "horizon-handler": "^1.1.0"
+    "horizon-handler": "^1.5.3"
   }
 }

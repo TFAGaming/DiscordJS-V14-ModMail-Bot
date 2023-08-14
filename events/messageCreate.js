@@ -108,7 +108,7 @@ module.exports = new eventshandler.event({
                 collector.on('collect', async (i) => {
                     collector.stop();
 
-                    set.delete(message.author.id)
+                    set.delete(message.author.id);
 
                     switch (i.customId) {
                         case 'create': {
@@ -138,7 +138,8 @@ module.exports = new eventshandler.event({
 
                             db.mails.create({
                                 userId: message.author.id,
-                                channelId: newchannel.id
+                                channelId: newchannel.id,
+                                guildId: guild.id
                             });
 
                             await sent.edit({

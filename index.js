@@ -59,14 +59,17 @@ console.log(`
 `.underline.blue + `version ${projectVersion}, by T.F.A#7524.
 `.underline.cyan);
 
-require('http').createServer((_req, res) => res.end('The express site is ready.') && console.log('[EXPRESS] Express is ready!'.green)).listen(3030);
+require('http').createServer((_req, res) => res.end('The express site is ready.') && console.log('Express is ready!'.green)).listen(3030);
 
 client.login(config.client.token || process.env.CLIENT_TOKEN).catch((e) => {
-    console.error('[ERROR] Unable to connect to the bot, this might be an invalid token or missing required intents!\n', e);
+    console.error('Unable to connect to the bot, this might be an invalid token or missing required intents!\n', e);
 });
 
 const commandshandler = new CommandsHandler('./commands/', false);
 const eventshandler = new EventsHandler('./events/', false);
+
+commandshandler.on('fileLoad', (command) => console.log('Loaded new command: ' + command.name));
+eventshandler.on('fileLoad', (event) => console.log('Loaded new event: ' + event));
 
 module.exports = {
     client,
@@ -77,7 +80,7 @@ module.exports = {
 };
 
 (async () => {
-    await commandshandler.load(collection.commands, (file) => `Loaded new command: ${file}`.green);
+    await commandshandler.load(collection.commands);
 
     await eventshandler.load(client, (file) => `Loaded new event: ${file}`.green);
 })();

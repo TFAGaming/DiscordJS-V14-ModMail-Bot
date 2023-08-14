@@ -1,4 +1,4 @@
-const { EmbedBuilder } = require("discord.js");
+const { EmbedBuilder, AttachmentBuilder } = require("discord.js");
 const { eventshandler, db } = require("..");
 const config = require("../config");
 
@@ -20,6 +20,24 @@ module.exports = new eventshandler.event({
                     ephemeral: true
                 });
 
+                const transcriptMessages = [];
+
+                const messages = await interaction.channel.messages.fetch();
+
+                for (const message of messages.values()) {
+                    if (message.embeds && message.author.id === client.user.id) {
+                        transcriptMessages.push(`[${new Date(message.createdTimestamp).toLocaleString()}] ${message.embeds[0]?.author?.name}: ${(message.embeds[0]?.description || message.embeds[0]?.image?.proxyURL || '[Error: Unable to fetch message content]')} ${message.attachments?.size > 0 ? message.attachments.map((v) => v.proxyURL).join(' ') : ''}`);
+                    } else if ((message.content || message.attachments?.size) && message.author.bot === false) {
+                        transcriptMessages.push(`[${new Date(message.createdTimestamp).toLocaleString()}] ${message.author.displayName}: ${message.content} ${message.attachments?.size > 0 ? message.attachments.map((v) => v.proxyURL).join(' ') : ''}`);
+                    } else continue;
+                };
+
+                transcriptMessages.reverse();
+                
+                // This will remove the first messages when the mail is created. Do not touch this to avoid errors.
+                transcriptMessages.shift();
+                transcriptMessages.shift();
+
                 const data = db.mails.findOne((v) => v.channelId === interaction.channelId);
 
                 await interaction.channel.delete();
@@ -36,6 +54,15 @@ module.exports = new eventshandler.event({
                             .setFooter({
                                 text: `${interaction.guild.name} devs`
                             })
+                    ]
+                }).catch(null);
+
+                await user.send({
+                    content: 'Mail messages history:',
+                    files: [
+                        new AttachmentBuilder(
+                            Buffer.from(transcriptMessages.join('\n'), 'utf-8'), { name: 'history.txt' }
+                        )
                     ]
                 }).catch(null);
 

@@ -1,12 +1,16 @@
 const { eventshandler, db } = require("..");
+const config = require('../config');
 
 module.exports = new eventshandler.event({
     event: 'channelDelete',
     run: async (client, channel) => {
 
-        if (channel.type !== 0) return;
+        const guild = client.guilds.cache.get(config.modmail.guildId);
+        const category = guild.channels.cache.find((v) => v.id === config.modmail.categoryId || v.name === 'ModMail');
+
+        if (channel.type !== 0 && channel.parentId !== category.id) return;
 
         db.mails.findOneAndDelete((v) => v.channelId === channel.id);
-        
+
     }
 });

@@ -1,4 +1,5 @@
-const { eventshandler, commandshandler } = require("..");
+const { eventshandler, commandshandler, db } = require("..");
+const config = require("../config");
 
 module.exports = new eventshandler.event({
     event: 'ready',
@@ -13,5 +14,36 @@ module.exports = new eventshandler.event({
             }
         });
 
+        const guild = client.guilds.cache.get(config.modmail.guildId);
+
+        if (!guild) {
+            console.log('Invalid guild ID provided in config.js.');
+            process.exit(1);
+        };
+
+        const category = guild.channels.cache.find((v) => v.id === config.modmail.categoryId || v.name === 'ModMail');
+
+        if (!category) {
+            console.log('Invalid category ID provided in config.js and unable to find a category named \'ModMail\'.');
+            process.exit(1);
+        };
+
+        console.log('Started checking the JSON files database...');
+
+        const mails = db.mails.findMany((v) => v.guildId === guild.id);
+
+        let found = 0;
+
+        for (const mail of mails) {
+            const channel = guild.channels.cache.get(mail.channelId);
+
+            if (!channel) {
+                found++;
+
+                db.mails.findOneAndDelete((v) => v.channelId === mail.channelId);
+            };
+        };
+
+        console.log('Total invalid mails found and deleted: ' + found);
     }
 });

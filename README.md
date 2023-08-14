@@ -26,6 +26,7 @@ If you find this project useful, please show your support by clicking the star (
 - Easy to use and set up.
 - Simplifies the management of modmail.
 - Robust error handling for a smooth experience.
+- Transcript system.
 
 <!--
 # Preview
@@ -103,4 +104,4 @@ If you encounter any issues or have questions about this project, please create 
 <img src="https://contrib.rocks/image?repo=TFAGaming/DiscordJS-V14-ModMail-Bot">
 
 ## License
-MIT
+The **MIT** License.
