@@ -128,15 +128,12 @@ client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
 
     const guild = client.guilds.cache.get(config.modmail.guildId);
-<<<<<<< HEAD
-=======
     await guild.members.fetch();
     if (!guild) {
         console.error('[CRASH] The provided guild is invalid.'.red);
 
         return process.exit();
     };
->>>>>>> 228b30ed2adc50b268c49e470f1bcda5aecf6f8d
 
     const category = guild.channels.cache.find((cat) => cat.id === config.modmail.categoryId || cat.name === "ModMail");
 
