@@ -40,7 +40,16 @@ module.exports = new eventshandler.event({
                 .setDescription(message.content?.length > 0 ? message.content : null)
                 .setColor('Blurple');
 
-            if (message.attachments?.size) embed.setImage(message.attachments.map((img) => img.proxyURL)[0]);
+            if (message.attachments?.size) {
+                const imageAttachment = message.attachments.find(attachment => attachment.contentType.startsWith('image/'));
+                if (imageAttachment) {
+                  embed.setImage(imageAttachment.proxyURL);
+                } else {
+                  message.attachments.forEach(attachment => {
+                    user.send({ files: [attachment] });
+                  });
+                }
+            }
 
             await user.send({
                 embeds: [
@@ -175,7 +184,16 @@ module.exports = new eventshandler.event({
                                 )
                                 .setColor('Blurple');
 
-                            if (message.attachments?.size) embed.setImage(message.attachments.map((img) => img.proxyURL)[0]);
+                            if (message.attachments?.size) {
+                                const imageAttachment = message.attachments.find(attachment => attachment.contentType.startsWith('image/'));
+                                if (imageAttachment) {
+                                  embed.setImage(imageAttachment.proxyURL);
+                                } else {
+                                  message.attachments.forEach(attachment => {
+                                    newchannel.send({ files: [attachment] });
+                                  });
+                                }
+                            }
 
                             await newchannel.send({
                                 content: config.modmail.mentionStaffRolesOnNewMail ? config.modmail.staffRoles.map((v) => roleMention(v)).join(', ') : null,
@@ -246,7 +264,16 @@ module.exports = new eventshandler.event({
                     .setDescription(message.content?.length > 0 ? message.content : null)
                     .setColor('Blurple');
 
-                if (message.attachments?.size) embed.setImage(message.attachments.map((img) => img.proxyURL)[0]);
+                if (message.attachments?.size) {
+                    const imageAttachment = message.attachments.find(attachment => attachment.contentType.startsWith('image/'));
+                    if (imageAttachment) {
+                      embed.setImage(imageAttachment.proxyURL);
+                    } else {
+                      message.attachments.forEach(attachment => {
+                        channel.send({ files: [attachment] });
+                      });
+                    }
+                }
 
                 await channel.send({
                     embeds: [
