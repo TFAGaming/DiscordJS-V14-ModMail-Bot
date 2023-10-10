@@ -44,28 +44,6 @@ module.exports = new eventshandler.event({
 
                 const user = client.users.cache.get(data?.userId);
 
-                if (!user) return;
-
-                await user.send({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setTitle('Your mail has been closed.')
-                            .setDescription(`**${interaction.user.displayName}** has closed your mail since it's marked as completed. Thank you for using our support!`)
-                            .setFooter({
-                                text: `${interaction.guild.name} devs`
-                            })
-                    ]
-                }).catch(null);
-
-                await user.send({
-                    content: 'Mail messages history:',
-                    files: [
-                        new AttachmentBuilder(
-                            Buffer.from(transcriptMessages.join('\n'), 'utf-8'), { name: 'history.txt' }
-                        )
-                    ]
-                }).catch(null);
-
                 const review = new StringSelectMenuBuilder()
                 .setCustomId('review')
                 .setPlaceholder('Please rout our support!')
@@ -95,6 +73,27 @@ module.exports = new eventshandler.event({
                 const row = new ActionRowBuilder()
                     .addComponents(review);
 
+                if (!user) return;
+
+                await user.send({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setTitle('Your mail has been closed.')
+                            .setDescription(`**${interaction.user.displayName}** has closed your mail since it's marked as completed. Thank you for using our support!`)
+                            .setFooter({
+                                text: `${interaction.guild.name} devs`
+                            })
+                    ]
+                }).catch(null);
+
+                await user.send({
+                    content: 'Mail messages history:',
+                    files: [
+                        new AttachmentBuilder(
+                            Buffer.from(transcriptMessages.join('\n'), 'utf-8'), { name: 'history.txt' }
+                        )
+                    ]
+                }).catch(null);
 
                 break;
             };
