@@ -6,6 +6,7 @@ module.exports = {
     modmail: {
         guildId: '', // ← Your server ID
         categoryId: '', // ← The modmail category ID
+        reviewChannelId: '', // ← The modmail review category ID
         staffRoles: [''], // ← The modmail staff roles IDs
         mentionStaffRolesOnNewMail: true // ← Mention staff roles when there is a new mail?
     }

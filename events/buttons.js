@@ -1,4 +1,4 @@
-const { EmbedBuilder, AttachmentBuilder } = require("discord.js");
+const { EmbedBuilder, AttachmentBuilder, StringSelectMenuBuilder, StringSelectMenuOptionBuilder, ActionRowBuilder} = require("discord.js");
 const { eventshandler, db } = require("..");
 const config = require("../config");
 
@@ -65,6 +65,36 @@ module.exports = new eventshandler.event({
                         )
                     ]
                 }).catch(null);
+
+                const review = new StringSelectMenuBuilder()
+                .setCustomId('review')
+                .setPlaceholder('Please rout our support!')
+                .addOptions(
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('⭐')
+                        .setValue('1')
+                        .setDescription('1 Star'),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('⭐⭐')
+                        .setValue('2')
+                        .setDescription('2 Stars'),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('⭐⭐⭐')
+                        .setValue('3')
+                        .setDescription('3 Stars'),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('⭐⭐⭐⭐')
+                        .setValue('4')
+                        .setDescription('4 Stars'),
+                    new StringSelectMenuOptionBuilder()
+                        .setLabel('⭐⭐⭐⭐⭐')
+                        .setValue('5')
+                        .setDescription('5 Stars')
+                );
+
+                const row = new ActionRowBuilder()
+                    .addComponents(review);
+
 
                 break;
             };
