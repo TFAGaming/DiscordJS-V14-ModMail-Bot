@@ -67,7 +67,7 @@ module.exports = new eventshandler.event({
                     ]
                 }).catch(null);
 
-                break;
+                if (!webhookClient) break;
 
                 await webhookClient.send({
                     embeds: [
