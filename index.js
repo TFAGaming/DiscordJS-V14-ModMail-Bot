@@ -1,18 +1,16 @@
-const { JSONSchemaDB } = require('@tfagaming/jsondb');
-const { time, wait } = require('./functions');
+const { SQLiteDatabase } = require('@tfadev/easy-sqlite');
 const { CommandsHandler, EventsHandler } = require('horizon-handler');
-require('colors');
-const config = require("./config.js");
-const projectVersion = require('./package.json').version || "v0.0.0";
-const { readdirSync } = require('fs');
-require('dotenv').config();
-
 const {
     Client,
     GatewayIntentBits,
     Partials,
-    Collection
+    Collection,
+    WebhookClient
 } = require('discord.js');
+require('colors');
+require('dotenv').config();
+const config = require("./config.js");
+const projectVersion = require('./package.json').version || "v0.0.0";
 
 const client = new Client({
     intents: [
@@ -34,20 +32,37 @@ const client = new Client({
     shards: "auto"
 });
 
-const db = {
-    bans: new JSONSchemaDB('./JSON/bans.json', {
-        automaticId: true,
-        uneditableId: true
-    }),
-    mails: new JSONSchemaDB('./JSON/mails.json', {
-        automaticId: true,
-        uneditableId: true
-    })
-};
+const webhookClient = (config.logs.webhookURL || process.env.WEBHOOK_URL )
+    ? new WebhookClient({ url: config.logs.webhookURL || process.env.WEBHOOK_URL })
+    : null;
 
-const collection = {
-    commands: new Collection()
-};
+const db = new SQLiteDatabase('./SQL/main.db');
+
+(async () => {
+    await db.create(
+        {
+            name: 'bans',
+            overwrite: true,
+            keys: {
+                id: ['INTEGER', { primary: true, autoincrement: true }],
+                userId: ['TEXT'],
+                guildId: ['TEXT'],
+                reason: ['TEXT', { nullable: true }]
+            }
+        },
+        {
+            name: 'mails',
+            overwrite: true,
+            keys: {
+                id: ['INTEGER', { primary: true, autoincrement: true }],
+                authorId: ['TEXT'],
+                guildId: ['TEXT'],
+                channelId: ['TEXT'],
+                closed: ['BOOLEAN', { nullable: true }]
+            }
+        }
+    );
+})();
 
 console.log(`
 ███╗░░░███╗░█████╗░██████╗░███╗░░░███╗░█████╗░██╗██╗░░░░░
@@ -59,10 +74,8 @@ console.log(`
 `.underline.blue + `version ${projectVersion}, by T.F.A#7524.
 `.underline.cyan);
 
-require('http').createServer((_req, res) => res.end('The express site is ready.') && console.log('Express is ready!'.green)).listen(3030);
-
 client.login(config.client.token || process.env.CLIENT_TOKEN).catch((e) => {
-    console.error('Unable to connect to the bot, this might be an invalid token or missing required intents!\n', e);
+    console.error('Unable to connect to the bot, this might be an invalid token or missing required intents!\n'.red, e);
 });
 
 const commandshandler = new CommandsHandler('./commands/', false);
@@ -73,25 +86,27 @@ eventshandler.on('fileLoad', (event) => console.log('Loaded new event: ' + event
 
 module.exports = {
     client,
+    webhookClient,
     db,
-    collection,
     commandshandler,
     eventshandler
 };
 
 (async () => {
-    await commandshandler.load(collection.commands);
+    await commandshandler.load();
 
-    await eventshandler.load(client, (file) => `Loaded new event: ${file}`.green);
+    await eventshandler.load(client);
 })();
 
 process.on('unhandledRejection', (reason, promise) => {
-    console.error("[ANTI-CRASH] An error has occured and been successfully handled: [unhandledRejection]".red);
+    console.error("[ANTI-CRASH: unhandledRejection] An error has occured and been successfully handled:".yellow);
+
     console.error(promise, reason);
 });
 
 process.on("uncaughtException", (err, origin) => {
-    console.error("[ANTI-CRASH] An error has occured and been successfully handled: [uncaughtException]".red);
+    console.error("[ANTI-CRASH: uncaughtException] An error has occured and been successfully handled:".yellow);
+
     console.error(err, origin);
 });
 

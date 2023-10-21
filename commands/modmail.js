@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require("discord.js");
+const { SlashCommandBuilder, PermissionFlagsBits } = require("discord.js");
 const { commandshandler, db } = require("..");
 
 module.exports = new commandshandler.command({
@@ -28,7 +28,8 @@ module.exports = new commandshandler.command({
                         .setDescription('The user to unban.')
                         .setRequired(true)
                 )
-        ),
+        )
+        .setDefaultMemberPermissions(PermissionFlagsBits.Administrator),
     run: async (client, interaction) => {
 
         const { options } = interaction;
@@ -38,9 +39,9 @@ module.exports = new commandshandler.command({
                 const user = options.getUser('user', true);
                 const reason = options.getString('reason') || 'No reason was provided';
 
-                const count = db.bans.count((v) => v.userId === user.id);
+                const count = await db.select('bans', { userId: user.id });
 
-                if (count > 0) {
+                if (count.length > 0) {
                     await interaction.reply({
                         content: 'That user is banned already.',
                         ephemeral: true
@@ -49,8 +50,9 @@ module.exports = new commandshandler.command({
                     return;
                 };
 
-                db.bans.create({
+                await db.insert('bans', {
                     userId: user.id,
+                    guildId: interaction.guild.id,
                     reason: reason
                 });
 
@@ -65,9 +67,9 @@ module.exports = new commandshandler.command({
             case 'unban': {
                 const user = options.getUser('user', true);
 
-                const count = db.bans.count((v) => v.userId === user.id);
+                const count = await db.select('bans', { userId: user.id });
 
-                if (count <= 0) {
+                if (count.length <= 0) {
                     await interaction.reply({
                         content: 'That user is not banned already.',
                         ephemeral: true
@@ -76,7 +78,7 @@ module.exports = new commandshandler.command({
                     return;
                 };
 
-                db.bans.findOneAndDelete((v) => v.userId === user.id);
+                await db.delete('bans', { userId: user.id });
 
                 await interaction.reply({
                     content: 'That user has been unbanned successfully.',

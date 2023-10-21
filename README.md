@@ -27,6 +27,7 @@ If you find this project useful, please show your support by clicking the star (
 - Simplifies the management of modmail.
 - Robust error handling for a smooth experience.
 - Transcript system.
+- Webhook logging system.
 
 <!--
 # Preview
@@ -44,63 +45,35 @@ Closing a mail (by staff):<br>
 <img src="https://media.discordapp.net/attachments/1111644651036876822/1121557698824130570/2023-06-22_22_49_26-TypeScript_Bot_-_Discord.png" alt="Closing Mail Preview">
 -->
 
-# Setup
-
 ## Requirements:
 
 - [Node.js](https://nodejs.org/en/): version 16.9.0 or above.
-- [discord.js](https://www.npmjs.com/package/discord.js): version 14.12.0 or above.
-- [horizon-handler](https://www.npmjs.com/package/horizon-handler) (my package): version 1.1.0 or above.
-- [@tfagaming/jsondb](https://www.npmjs.com/package/@tfagaming/jsondb) (my package): version 1.2.1 or above.
+- [discord.js](https://www.npmjs.com/package/discord.js): version 14.13.0 or above.
+- [horizon-handler](https://www.npmjs.com/package/horizon-handler) (my package): version 1.6.0 or above.
+- [@tfadev/easy-sqlite](https://www.npmjs.com/package/@tfadev/easy-sqlite) (my package): version 1.0.1 or above.
 - [colors](https://www.npmjs.com/package/ms): any version.
 
-To set up the project, follow these steps:
+## Setup the project:
 
-1. Run `npm init -y` in your terminal to initialize a new project.
-2. Install the required packages by running `npm i discord.js aqify.js tfa-jsonmap colors`.
-3. Create a `config.js` file using the provided `example.config.js` as a template.
-4. Fill in the empty values in the `config.js` file with the required information.
-
-> **Warning**
-> If you're using repl.it, use `process.env.CLIENT_TOKEN` as your bot token in `config.js`, and then create a new key in **Secrets** named **CLIENT_TOKEN** with the value of your bot token.
-> ```ts
-> client: {
->     token: process.env.CLIENT_TOKEN,
->     id: ...
-> }, ...
-> ```
-
-5. Obtain your bot token from the [Discord Developer Portal](https://discord.com/developers) and add it to the `config.js` file.
-6. Configure the necessary settings for your bot, such as the guild ID, category ID for modmail, staff roles, and whether to mention staff roles for new mail notifications.
-7. Start the bot by running `node index.js`, `node .`, or `npm run start` in your terminal.
-
-## Running on Replit:
-
-To run the project on Replit, follow these additional steps:
-
-1. Create an account on [replit.com](https://www.replit.com) (if you don't have one already).
-2. Fork this project by clicking on the **Fork For: Replit** badge.
-3. Click on **Import from GitHub** and wait for Replit to import the repository.
-4. Configure the Run button to execute the appropriate command (`node index.js`, `node .`, or `npm run start`).
-5. Fill in the required values in the `config.js` file.
-6. Set up environment secret variables for your bot token by going to **Environment Secret Variables** and adding a key with the name `CLIENT_TOKEN` and the corresponding bot token as the value.
-7. Click on the green **Run** button to start your bot.
-
-## Running on Visual Studio Code:
-
-To run the project on Visual Studio Code, follow these additional steps:
+To run the project, follow these steps:
 
 1. Download and unzip the source code.
 2. Open Visual Studio Code and select the unzipped folder as your workspace.
-3. Fill in the required values in the `config.js`
+3. Use `npm init -y` and then `npm i`.
+4. Fill in the empty values in the `config.js` file with the required information, you can use `.env` file for more security. Obtain your bot token from the [Discord Developer Portal](https://discord.com/developers).
+5. Open the terminal in Visual Studio Code and run `node index.js`, `node .`, or `npm run start`.
+6. Enjoy! =)
 
-file. 4. Open the terminal in Visual Studio Code and run `node index.js`, `node .`, or `npm run start`. 5. Enjoy! =)
+### Logging Discord webhook:
+Create a new integration for a text channel (which is webhook, for sure), and copy it's URL and use it in `config.js` or `.env`. It's just a simple logging system, whichs logs the newly created mail and closed mails.
 
 ## Need Assistance?
 
 If you encounter any issues or have questions about this project, please create an issue on this repository. I will respond to your inquiries as quickly as possible. Your feedback is valuable and helps improve the project.
 
 ## Contributors
+Thank you to all the people who contributed to **DiscordJS-V14-ModMail-Bot**!
+
 <img src="https://contrib.rocks/image?repo=TFAGaming/DiscordJS-V14-ModMail-Bot">
 
 ## License

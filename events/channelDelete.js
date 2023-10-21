@@ -10,7 +10,7 @@ module.exports = new eventshandler.event({
 
         if (channel.type !== 0 && channel.parentId !== category.id) return;
 
-        db.mails.findOneAndDelete((v) => v.channelId === channel.id);
+        await db.delete('mails', { channelId: channel.id });
 
     }
 });

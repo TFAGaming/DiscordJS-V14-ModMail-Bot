@@ -1,6 +1,7 @@
 const { EmbedBuilder, AttachmentBuilder } = require("discord.js");
-const { eventshandler, db } = require("..");
+const { eventshandler, db, webhookClient } = require("..");
 const config = require("../config");
+const { time } = require("../functions");
 
 module.exports = new eventshandler.event({
     event: 'interactionCreate',
@@ -34,15 +35,15 @@ module.exports = new eventshandler.event({
 
                 transcriptMessages.reverse();
                 
-                // This will remove the first messages when the mail is created. Do not touch this to avoid errors.
+                // This will remove the first messages when the mail is created, do not touch this to avoid future errors.
                 transcriptMessages.shift();
                 transcriptMessages.shift();
 
-                const data = db.mails.findOne((v) => v.channelId === interaction.channelId);
+                const data = (await db.select('mails', { channelId: interaction.channelId }))[0];
 
                 await interaction.channel.delete();
 
-                const user = client.users.cache.get(data?.userId);
+                const user = client.users.cache.get(data?.authorId);
 
                 if (!user) return;
 
@@ -65,6 +66,18 @@ module.exports = new eventshandler.event({
                         )
                     ]
                 }).catch(null);
+
+                break;
+
+                await webhookClient.send({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setTitle('Mail closed')
+                            .setDescription(`<@${data?.authorId || '000000000000000000'}>'s mail has been closed by a staff.\n\n**Executed by**: ${interaction.user.displayName} (${interaction.user.toString()})\n**Date**: ${time(Date.now(), 'f')} (${time(Date.now(), 'R')})`)
+                            .setFooter({ text: interaction.guild.name + '\'s  logging system' })
+                            .setColor('Red')
+                    ]
+                });
 
                 break;
             };

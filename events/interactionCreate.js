@@ -1,4 +1,4 @@
-const { eventshandler, collection } = require("..");
+const { eventshandler, commandshandler } = require("..");
 
 module.exports = new eventshandler.event({
     event: 'interactionCreate',
@@ -6,7 +6,7 @@ module.exports = new eventshandler.event({
 
         if (!interaction.isChatInputCommand()) return;
 
-        const command = collection.commands.get(interaction.commandName);
+        const command = commandshandler.collection.get(interaction.commandName);
         
         if (!command || command.type !== 1) return;
 

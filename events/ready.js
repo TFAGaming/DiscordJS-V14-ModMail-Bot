@@ -30,7 +30,7 @@ module.exports = new eventshandler.event({
 
         console.log('Started checking the JSON files database...');
 
-        const mails = db.mails.findMany((v) => v.guildId === guild.id);
+        const mails = await db.select('mails', { guildId: guild.id });
 
         let found = 0;
 
@@ -40,7 +40,7 @@ module.exports = new eventshandler.event({
             if (!channel) {
                 found++;
 
-                db.mails.findOneAndDelete((v) => v.channelId === mail.channelId);
+                db.delete('mails', { channelId: mail.channelId });
             };
         };
 

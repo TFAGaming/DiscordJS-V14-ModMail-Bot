@@ -1,5 +1,5 @@
 const { EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, roleMention } = require("discord.js");
-const { eventshandler, db } = require("..");
+const { eventshandler, db, webhookClient } = require("..");
 const config = require("../config");
 const { time, permissionsCalculator } = require("../functions");
 
@@ -19,8 +19,9 @@ module.exports = new eventshandler.event({
         if (message.guild) {
             if (message.channel.parentId !== category.id) return;
 
-            const data = db.mails.findOne((v) => v.channelId === message.channelId);
-            const user = client.users.cache.get(data?.userId);
+            const data = (await db.select('mails', { channelId: message.channelId }))[0];
+
+            const user = guild.members.cache.get(data?.authorId);
 
             if (!user) {
                 await message.reply({
@@ -42,14 +43,15 @@ module.exports = new eventshandler.event({
 
             if (message.attachments?.size) {
                 const imageAttachment = message.attachments.find(attachment => attachment.contentType.startsWith('image/'));
+
                 if (imageAttachment) {
-                  embed.setImage(imageAttachment.proxyURL);
+                    embed.setImage(imageAttachment.proxyURL);
                 } else {
-                  message.attachments.forEach(attachment => {
-                    user.send({ files: [attachment] });
-                  });
-                }
-            }
+                    message.attachments.forEach(attachment => {
+                        user.send({ files: [attachment] });
+                    });
+                };
+            };
 
             await user.send({
                 embeds: [
@@ -57,23 +59,23 @@ module.exports = new eventshandler.event({
                 ]
             }).catch(async () => {
                 await message.reply({
-                    content: 'The user has their DMs blocked.'
+                    content: 'The user has their DMs closed, or they blocked me!'
                 });
             });
 
-            await message.react('📨');
+            await message.react('📨').catch(null);
         } else {
-            const bannedCheckr = db.bans.findOne((v) => v.userId === message.author.id);
+            const bannedCheckr = (await db.select('bans', { userId: message.author.id }))[0];
 
             if (bannedCheckr) {
                 await message.reply({
-                    content: 'You are currently banned for using the ModMail system. Reason: ' + bannedCheckr?.reason
+                    content: 'You are currently banned for using the ModMail system.\n\n**Reason**: ' + bannedCheckr?.reason || 'No reason was provided.'
                 });
 
                 return;
             };
 
-            const data = db.mails.findOne((v) => v.userId === message.author.id);
+            const data = (await db.select('mails', { authorId: message.author.id }))[0];
 
             const channel = guild.channels.cache.find((channel) => channel.id === data?.channelId);
 
@@ -145,10 +147,10 @@ module.exports = new eventshandler.event({
                                 permissionOverwrites: permissions
                             });
 
-                            db.mails.create({
-                                userId: message.author.id,
+                            await db.insert('mails', {
+                                authorId: message.author.id,
                                 channelId: newchannel.id,
-                                guildId: guild.id
+                                guildId: guild.id,
                             });
 
                             await sent.edit({
@@ -158,7 +160,7 @@ module.exports = new eventshandler.event({
                                         .setTitle(`${guild.name} - ModMail`)
                                         .setDescription('Thank you for creating a new mail, a staff member should respond to your ticket any time soon!')
                                         .setFooter({
-                                            text: '© TFA 7524, https://www.github.com/TFAGaming/DiscordJS-V14-ModMail-Bot'
+                                            text: '© T.F.A 7524, https://www.github.com/TFAGaming/DiscordJS-V14-ModMail-Bot'
                                         })
                                         .setColor('Blurple')
                                 ],
@@ -187,13 +189,13 @@ module.exports = new eventshandler.event({
                             if (message.attachments?.size) {
                                 const imageAttachment = message.attachments.find(attachment => attachment.contentType.startsWith('image/'));
                                 if (imageAttachment) {
-                                  embed.setImage(imageAttachment.proxyURL);
+                                    embed.setImage(imageAttachment.proxyURL);
                                 } else {
-                                  message.attachments.forEach(attachment => {
-                                    newchannel.send({ files: [attachment] });
-                                  });
-                                }
-                            }
+                                    message.attachments.forEach(attachment => {
+                                        newchannel.send({ files: [attachment] });
+                                    });
+                                };
+                            };
 
                             await newchannel.send({
                                 content: config.modmail.mentionStaffRolesOnNewMail ? config.modmail.staffRoles.map((v) => roleMention(v)).join(', ') : null,
@@ -210,6 +212,18 @@ module.exports = new eventshandler.event({
                                         )
                                 ]
                             }).then(async (sent) => await sent.pin());
+                            
+                            if (webhookClient === null) return;
+
+                            await webhookClient.send({
+                                embeds: [
+                                    new EmbedBuilder()
+                                        .setTitle('New mail created')
+                                        .setDescription(`<@${message.author.id || '000000000000000000'}>'s mail has been created.\n\n**Executed by**: ${message.author.displayName} (${message.author.toString()})\n**Date**: ${time(Date.now(), 'f')} (${time(Date.now(), 'R')})`)
+                                        .setFooter({ text: guild.name + '\'s  logging system' })
+                                        .setColor('Green')
+                                ]
+                            });
 
                             break;
                         };
@@ -267,11 +281,11 @@ module.exports = new eventshandler.event({
                 if (message.attachments?.size) {
                     const imageAttachment = message.attachments.find(attachment => attachment.contentType.startsWith('image/'));
                     if (imageAttachment) {
-                      embed.setImage(imageAttachment.proxyURL);
+                        embed.setImage(imageAttachment.proxyURL);
                     } else {
-                      message.attachments.forEach(attachment => {
-                        channel.send({ files: [attachment] });
-                      });
+                        message.attachments.forEach(attachment => {
+                            channel.send({ files: [attachment] });
+                        });
                     }
                 }
 
