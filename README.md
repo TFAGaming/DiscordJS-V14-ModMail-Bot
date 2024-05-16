@@ -1,3 +1,5 @@
+## The development has been discontinued as of May 16, 2024.
+
 <!--
 <p align="center">
     <a href="https://github.com/TFAGaming/DiscordJS-V14-ModMail-Bot">
